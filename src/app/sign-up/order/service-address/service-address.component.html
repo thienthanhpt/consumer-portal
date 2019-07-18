@@ -1,0 +1,171 @@
+<form class="content-service-address" #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+  <div class="form-content form-row">
+
+    <div class="form-group col-md-6">
+      <label class="form-control-label" for="servicePostalCode">Postal code</label>
+      <input name="servicePostalCode" id="servicePostalCode" class="form-control"
+             (blur)="validatePostalCode($event.target.value)"
+             [class.is-invalid]="servicePostalCode.invalid && (servicePostalCode.touched || form.submitted)"
+             required [pattern]="config.validationRegex.postalCode"
+             [(ngModel)]="parent.model.premise.servicePostalCode" #servicePostalCode="ngModel"/>
+
+      <div *ngIf="servicePostalCode.invalid && (servicePostalCode.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="servicePostalCode?.errors.required">
+          <i>Postal code is required</i>
+        </div>
+        <div *ngIf="!servicePostalCode?.errors.required && servicePostalCode?.errors.pattern">
+          <i>Postal code is invalid</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-md-6">
+      <label class="form-control-label" for="buildingName">Building name</label>
+      <input name="buildingName" id="buildingName" class="form-control" placeholder="(Optional)"
+             [(ngModel)]="serviceAddress.buildingName"/>
+    </div>
+
+    <div class="form-group col-lg-6">
+      <label class="form-control-label" for="houseNo">Block/House No.</label>
+      <input name="houseNo" id="houseNo" class="form-control"
+             [class.is-invalid]="houseNo.invalid && (houseNo.touched || form.submitted)"
+             required [pattern]="config.validationRegex.blockHouseNo"
+             [(ngModel)]="serviceAddress.houseNo" #houseNo="ngModel"/>
+
+      <div *ngIf="houseNo.invalid && (houseNo.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="houseNo?.errors.required">
+          <i>Block/House No. is required</i>
+        </div>
+        <div *ngIf="!houseNo?.errors.required && houseNo?.errors.pattern">
+          <i>Block/House No. should at least contains one number</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-6 col-lg-3">
+      <label class="form-control-label" for="level">Level</label>
+      <div class="input-nested-icon">
+        <input name="level" id="level" class="form-control"
+               [class.is-invalid]="level.invalid && (level.touched || form.submitted)"
+               [required]="serviceAddress.unitNo != ''"
+               [(ngModel)]="serviceAddress.level" #level="ngModel"/>
+        <span>#</span>
+      </div>
+
+      <div *ngIf="level.invalid && (level.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="level?.errors.required">
+          <i>Level required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-6 col-lg-3">
+      <span class="connection-div">-</span>
+      <label class="form-control-label" for="unitNo">Unit No.</label>
+      <input name="unitNo" id="unitNo" class="form-control"
+             [class.is-invalid]="unitNo.invalid && (unitNo.touched || form.submitted)"
+             [required]="serviceAddress.level != ''"
+             [(ngModel)]="serviceAddress.unitNo" #unitNo="ngModel"/>
+
+      <div *ngIf="unitNo.invalid && (unitNo.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="unitNo?.errors.required">
+          <i>Unit No. is required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-12">
+      <label class="form-control-label" for="streetName">Street name</label>
+      <input name="streetName" id="streetName" class="form-control"
+             [class.is-invalid]="streetName.invalid && (streetName.touched || form.submitted)"
+             required
+             [(ngModel)]="serviceAddress.streetName" #streetName="ngModel"/>
+      <small class="text-secondary font-italic">Postal code and Nation name should not be included.</small>
+      <div *ngIf="streetName.invalid && (streetName.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="streetName?.errors?.required">
+          <i>Street name is required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-12">
+      <label class="form-control-label" for="dwellingType">Dwelling type</label>
+      <select name="dwellingType" id="dwellingType" class="form-control"
+              [class.is-invalid]="dwellingType.invalid && (dwellingType.touched || form.submitted)"
+              required (change)="onSelectDwellingType($event.target.value)"
+              [(ngModel)]="parent.model.premise.dwellingType" #dwellingType="ngModel">
+        <option [value]="null" disabled>Select your dwelling type</option>
+        <option *ngFor="let option of DWELLING_TYPE_OPTIONS | toArray" [value]="option.key">{{ option.value }}</option>
+      </select>
+
+      <div *ngIf="dwellingType.invalid && (dwellingType.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="dwellingType?.errors.required">
+          <i>Dwelling type is required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 py-3">
+      <button class="btn step-next mx-auto">
+        <span>Next</span> <img src="/assets/sign-up/images/content/next.png" includeVersion>
+      </button>
+    </div>
+  </div>
+</form>
+
+
+<ng-template #warningModal>
+    <!-- Modal Header -->
+    <div class="modal-header border-bottom-0 pb-0">
+      <h4 class="modal-title">&nbsp;</h4>
+      <button type="button" class="close" (click)="modal.hide();">&times;</button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="modal-body d-flex flex-column pt-0 pl-5 ml-5 pr-5 mr-5">
+      <div class="text-center">
+        <h5>Postal Code Verification</h5>
+      </div>
+      <div class="pt-5 pb-4 text-center">
+        <p [innerHTML]="warningMessage"></p>
+      </div>
+    </div>
+
+    <div class="my-4 mx-auto">
+      <button type="button" class="btn btn-submit" (click)="modal.hide();">
+        <span>OK</span>
+      </button>
+    </div>
+
+</ng-template>
+
+<ng-template #pickUpModal>
+  <!-- Modal Header -->
+  <div class="modal-header border-bottom-0 pb-0">
+    <h4 class="modal-title">&nbsp;</h4>
+    <button type="button" class="close" (click)="modal.hide();">&times;</button>
+  </div>
+
+  <!-- Modal body -->
+  <div class="modal-body d-flex flex-column pt-0 pl-5 ml-5 pr-5 mr-5" style="font-family: MyriadPro-Cond;">
+    <div class="text-center">
+      <h5>Please select your correct premise</h5>
+    </div>
+
+    <div class="pt-4 pb-4">
+      <div class="custom-radio" *ngFor="let location of validLocations | toArray; let i = index">
+        <label for="custom-radio-{{i}}">
+          <input id="custom-radio-{{i}}" name="address" class="custom-input custom-radio" type="radio" (click)="pickedLocation = location.key" [checked]="pickedLocation === location.key">
+          <span class="custom-span">{{location.key}}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="my-4 mx-auto" style="margin-top: 0px !important;">
+    <button type="button" class="btn btn-submit" (click)="prefillAddress(); modal.hide();">
+      <span>Select</span>
+    </button>
+  </div>
+
+</ng-template>

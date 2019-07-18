@@ -1,0 +1,19 @@
+.form-control[readonly] {
+  background-color: unset;
+}
+
+#referralCode:focus {
+  box-shadow: unset !important;
+  border: 1px solid #ced4da;
+  border-top-right-radius: unset !important;
+  border-bottom-right-radius: unset !important;
+}
+
+#referralCopyBtn:focus {
+  box-shadow: unset !important;
+  border: 1px solid #ced4da;
+}
+
+input:focus {
+  border-radius: 0.25rem !important;
+}

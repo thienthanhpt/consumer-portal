@@ -1,0 +1,275 @@
+<div class="row mb-md-3">
+  <div class="card-deck mx-0 px-sm-0 col-sm-12">
+    <div class="card border-top-blue-gray">
+      <div class="card-body">
+        <h5><strong>Pay Bill</strong></h5>
+        <div class="row">
+          <div class="col-12">
+            <div *ngIf="isRecurringMethod">
+              <strong>Overview of your bills:</strong>
+              <br>
+              Your outstanding amount will be automatically deducted from your [recurring mode of payment] on {{getFormatDD_MMM_YYYY(billingReport?.currentBilling?.dueDate)}}
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="container">
+          <div class="card card-body bg-light">
+            <div class="form-row">
+              <div class="form-group col-lg-6">
+                <label class="form-control-label" for="premise">Service Address</label>
+                <select name="premise" id="premise" [(ngModel)]="premise" class="form-control" (change)="onSelectPremise()">
+                  <option value="" disabled>Choose your premise</option>
+                  <option *ngFor="let item of csPremises" [ngValue]="item" [selected]="item.value === premise.value">{{item.value}}</option>
+                </select>
+              </div>
+
+              <div class="form-group col-lg-6">
+                <label class="form-control-label" for="amount">Amount</label>
+                <div class="input-group">
+                  <input type="number" step="0.01" class="form-control text-right" id="amount"
+                         name="amount" style="border-radius: 3px;" [(ngModel)]="payAmount" #amount>
+                  <div class="input-group-prepend cuz-amount">
+                    <span>S$</span>
+                  </div>
+                </div>
+                <div *ngIf="!isValidPaymentAmount(amount)" class="invalid-feedback">
+                  <i>Pay amount must greater than 0, less than {{ billingReport?.totalAmount?.toFixed(2) }} and only accepts 2 decimals number</i>
+                </div>
+                <div class="title-opacity text-right" style="font-size: 15px">Amount due: <strong>S$ {{ getAmountDue(billingReport?.currentBilling?.totalAmountPayable) }}</strong></div>
+                <div class="title-opacity text-right" style="font-size: 15px">Due date: <strong>{{ getFormatDD_MMM_YYYY(billingReport?.currentBilling?.dueDate) }}</strong></div>
+                <div class="text-right">Total due: <strong>S$ {{ billingReport?.totalAmount?.toFixed(2) }}</strong></div>
+              </div>
+
+            </div>
+
+            <div class="row" style="padding: 15px">
+              <div class="col-12" style="border-bottom: 1px solid #ced4da">
+
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="text-left">Choose payment method:</div>
+              </div>
+            </div>
+            <div class="row justify-content-center pd-md-100 pd-sm-0">
+              <div class="col-4 pd-md-10 pd-sm-5">
+                <div id="visa" class="overlay cuz-payment" [ngClass]="{'active-div': paymentMethod['credit']}">
+                  <img class="img-md-60 img-sm-80" src="/assets/my-account/images/logo/card.png" alt="">
+                  <button *ngIf="paymentMethod['credit']" class="btn btn-default btn-circle">
+                    <i class="fas fa-check text-white"></i>
+                  </button>
+                </div>
+                <div class="justify-content-center text-center text-blue-black" style="font-size: 60%">
+                  Credit/Debit Card
+                </div>
+              </div>
+
+              <!--<div class="col-4 pd-md-10 pd-sm-5">-->
+                <!--<div id="paynow" class="overlay cuz-payment" (click)="paymentMethodChanged('paynow')" [ngClass]="{'active-div': paymentMethod['paynow']}">-->
+                  <!--<img class="img-md-70 img-sm-80" src="/assets/my-account/images/logo/paynow2.png" alt="">-->
+                  <!--<button *ngIf="paymentMethod['paynow']" class="btn btn-default btn-circle">-->
+                    <!--<i class="fas fa-check text-white"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div class="justify-content-center text-center text-blue-black" style="font-size: 60%">-->
+                  <!--Paynow-->
+                <!--</div>-->
+              <!--</div>-->
+
+              <!--<div class="col-4 pd-md-10 pd-sm-5">-->
+                <!--<div id="axs" class="overlay cuz-payment" (click)="paymentMethodChanged('axs')" [ngClass]="{'active-div': paymentMethod['axs']}">-->
+                  <!--<img class="img-md-50 img-sm-80" style="width: 51%;" src="/assets/my-account/images/logo/axs.png" alt="">-->
+                  <!--<button *ngIf="paymentMethod['axs']" class="btn btn-default btn-circle">-->
+                    <!--<i class="fas fa-check text-white"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div class="justify-content-center text-center text-blue-black" style="font-size: 60%">-->
+                  <!--AXS m-station-->
+                <!--</div>-->
+              <!--</div>-->
+            </div>
+            <br>
+
+            <div class="col-12 justify-content-center pd-md-100 pd-sm-0">
+              <div class="btn-radio" (click)="isSinglePayment = true; isSinglePaymentAndSaveCard = false; isSinglePaymentAndRecurring = false">
+                <label style="margin-bottom: 0px">
+                  <input style="margin-right: 10px" type="radio" [checked]="isSinglePayment">
+                  Single payment
+                </label>
+              </div>
+              <div *ngIf="isSinglePayment" style="margin-left: 10%">
+                <div *ngFor="let card of cardList">
+                  <label style="margin-bottom: 0px">
+                    <input style="margin-right: 10px" type="radio" (change)="onSelectionCard(card)" name="card-list" [checked]="card.id == cardList[0]?.id">
+                    {{ card.displayNo }}
+                  </label>
+                  <span>
+                    <img *ngIf="card.cardType === 'VISA'" class="img-md-50 img-sm-80" style="width: 40px;"
+                         [ngClass]="{ 'font-weight-bold': card.isAutoDeduct, 'title-opacity':  !card.isAutoDeduct}"
+                         src="/assets/my-account/images/logo/visa-sm.png" alt="">
+                    <img *ngIf="card.cardType === 'MASTERCARD'" class="img-md-50 img-sm-80" style="width: 40px;"
+                         [ngClass]="{ 'font-weight-bold': card.isAutoDeduct, 'title-opacity':  !card.isAutoDeduct}"
+                         src="/assets/my-account/images/logo/mastercard-sm.png" alt="">
+                  </span>
+                </div>
+              </div>
+              <div class="btn-radio" (click)="isSinglePayment = false; isSinglePaymentAndSaveCard = true; isSinglePaymentAndRecurring = false">
+                <label style="margin-bottom: 0px">
+                  <input style="margin-right: 10px" type="radio" [checked]="isSinglePaymentAndSaveCard">
+                  Single payment and save card
+                </label>
+              </div>
+              <div class="btn-radio" (click)="changeRecurring($event);">
+                <label style="margin-bottom: 0px">
+                  <input style="margin-right: 10px" type="radio" [checked]="isSinglePaymentAndRecurring">
+                  Single payment and apply for recurring payment
+                </label>
+              </div>
+
+              <div *ngIf="isSinglePaymentAndRecurring" style="margin-left: 10%">
+                <div *ngFor="let card of cardList">
+                  <label style="margin-bottom: 0px">
+                    <input style="margin-right: 10px" type="radio" (change)="onSelectionCard(card)" name="card-list" [checked]="card.id == cardList[0]?.id">
+                    {{ card.displayNo }}
+                  </label>
+                  <span>
+                    <img *ngIf="card.cardType === 'VISA'" class="img-md-50 img-sm-80" style="width: 40px;"
+                         [ngClass]="{ 'font-weight-bold': card.isAutoDeduct, 'title-opacity':  !card.isAutoDeduct}"
+                         src="/assets/my-account/images/logo/visa-sm.png" alt="">
+                    <img *ngIf="card.cardType === 'MASTERCARD'" class="img-md-50 img-sm-80" style="width: 40px;"
+                         [ngClass]="{ 'font-weight-bold': card.isAutoDeduct, 'title-opacity':  !card.isAutoDeduct}"
+                         src="/assets/my-account/images/logo/mastercard-sm.png" alt="">
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!--<div *ngIf="paymentMethod['paynow']" class="col-12 justify-content-center pd-md-100 pd-sm-0">-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">1. Scan the QR Code</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">2. Enter Bill Reference Number</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">3. Enter Amount Payable</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">4. Submit your payment</label>-->
+              <!--</div>-->
+            <!--</div>-->
+
+            <!--<div *ngIf="paymentMethod['axs']" class="col-12 justify-content-center pd-md-100 pd-sm-0">-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">1. Enter Bill Reference No</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">2. Enter Contact Number</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">3. Enter Amount Payable</label>-->
+              <!--</div>-->
+              <!--<div class="btn-radio">-->
+                <!--<label style="margin-bottom: 0px">4. Submit your payment</label>-->
+              <!--</div>-->
+            <!--</div>-->
+
+            <br>
+            <div class="row justify-content-center">
+              <button type="button" [loadingDisable]="isLoading" [displaySpinner]="true" class="btn btn-danger"
+                      style="width: 20%" (click)="handleHostedCheckout()" [disabled]="!isValidPaymentAmount(amount)">Proceed payment</button>
+              <button *ngIf="paymentMethod['paynow']" type="button" class="btn btn-danger" style="width: 20%" (click)="handleRedirect()">Got it!</button>
+              <button *ngIf="paymentMethod['axs']" type="button" class="btn btn-danger" style="width: 20%" (click)="handleRedirect()">Got it!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #warningModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">Change recurring</h5>
+        <p>You have recurring method set up already. Do you really want to change?</p>
+        <button style="padding-left: 7px" class="btn btn-blue btn-login text-white cuz-validate-btn text-center" (click)="changedRecurring()">Continue</button>
+        <button style="margin-left: 10px" class="btn btn-red btn-login text-white cuz-validate-btn" (click)="modal.hide();">Cancel</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #errorModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <h4 class="modal-title">&nbsp;</h4>
+      <button type="button" class="close" (click)="modal.hide();">&times;</button>
+    </div>
+
+    <div class="modal-body d-flex flex-column pt-0 pl-5 ml-5 pr-5 mr-5">
+      <div class="text-center">
+        <h5>Error</h5>
+      </div>
+      <div class="pt-5 pb-4 text-center">
+        <p [innerHTML]="errorMessage"></p>
+      </div>
+    </div>
+
+    <div class="my-4 mx-auto">
+      <button type="button" class="btn btn-submit" (click)="modal.hide();">
+        <span>OK</span>
+      </button>
+    </div>
+
+  </ng-template>
+
+  <ng-template #warningRecurringServiceModal>
+    <div class="pt-3 pr-4 pl-4">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body text-center pl-5 pr-5 pb-5">
+      <i class="fas fa-exclamation-triangle fa-4x text-warning"></i>
+      <p class="pt-4" [innerHTML]="errorMessage"></p>
+
+      <div class="text-center">
+        <button type="button" class="btn btn-primary text-white" (click)="modal.hide();">
+          Yes
+        </button>
+      </div>
+    </div>
+
+  </ng-template>
+
+  <ng-template #alertModal>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">Transaction Verification</h5>
+        <p>This transaction was successful and your payment is being processed.</p>
+        <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="modal.hide(); handleRedirect()">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #timeoutModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">Transaction Timeout</h5>
+        <p>This transaction was unsuccessful due to timeout, please try again.</p>
+        <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="modal.hide();">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+</div>

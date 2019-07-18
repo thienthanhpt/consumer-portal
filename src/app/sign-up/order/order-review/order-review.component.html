@@ -1,0 +1,481 @@
+<div class="form-content ema-scroll-view pl-5 pr-5 myriad-cond" #reviewForm>
+  <div class="clearfix pb-4">
+    <div class="float-left font-weight-bold">Plan summary</div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Plan name:</div>
+    <div class="col-md-6 font-weight-bold">
+      {{ selectedPricingPlan?.displayName }}
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">DOT / Fixed rate:</div>
+    <div class="col-md-6 font-weight-bold">
+      <span *ngIf="isDotPlan">
+        <ng-container *ngFor="let rate of selectedPricingPlan?.promotionTemplates; let last = last">
+          <ng-container>{{ (rate?.percentDiscount * 100).toFixed(2) }}</ng-container>
+          <ng-container *ngIf="!last"> / </ng-container>
+          <ng-container *ngIf="last"> % DOT </ng-container>
+        </ng-container>
+        <ng-container *ngFor="let promotion of selectedPricingPlan?.promotionTemplates; let first = first; let last = last">
+          <ng-container *ngIf="first && !last"> (first </ng-container>
+          <ng-container *ngIf="!first"> / next </ng-container>
+          <ng-container *ngIf="!(first && last)"> {{ promotion.defaultApplyingPeriod }} mths</ng-container>
+          <ng-container *ngIf="!first && last">)</ng-container>
+        </ng-container>
+      </span>
+
+      <span *ngIf="!isDotPlan">
+        <ng-container *ngFor="let rate of selectedPricingPlan?.promotionTemplates; let last = last">
+          <ng-container>{{(rate?.rateWithPromotionExcludingTax * 100).toFixed(2)}}</ng-container>
+          <ng-container *ngIf="!last"> / </ng-container>
+          <ng-container *ngIf="last"> cents/kWh FIXED </ng-container>
+        </ng-container>
+        <ng-container *ngFor="let promotion of selectedPricingPlan?.promotionTemplates; let first = first; let last = last">
+          <ng-container *ngIf="first && !last"> (first </ng-container>
+          <ng-container *ngIf="!first"> / next </ng-container>
+          <ng-container *ngIf="!(first && last)"> {{ promotion.defaultApplyingPeriod }} mths </ng-container>
+          <ng-container *ngIf="!first && last">) - Excluding GST</ng-container>
+          <ng-container *ngIf="first && last">- Excluding GST</ng-container>
+        </ng-container>
+      </span><br/>
+
+      <span *ngIf="!isDotPlan">
+        <ng-container *ngFor="let rate of selectedPricingPlan?.promotionTemplates; let last = last">
+          <ng-container>{{(rate?.rateWithPromotion * 100).toFixed(2) }}</ng-container>
+          <ng-container *ngIf="!last"> / </ng-container>
+          <ng-container *ngIf="last"> cents/kWh FIXED </ng-container>
+        </ng-container>
+        <ng-container *ngFor="let promotion of selectedPricingPlan?.promotionTemplates; let first = first; let last = last">
+          <ng-container *ngIf="first && !last"> (first </ng-container>
+          <ng-container *ngIf="!first"> / next </ng-container>
+          <ng-container *ngIf="!(first && last)"> {{ promotion.defaultApplyingPeriod }} mths </ng-container>
+          <ng-container *ngIf="!first && last">) - Including GST</ng-container>
+          <ng-container *ngIf="first && last">- Including GST</ng-container>
+        </ng-container>
+      </span>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">SP account No:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="serviceNo"
+                 name="serviceNo"
+                 [ngClass]="{'border-right-radius-0': !premiseMapInput['serviceNo'], 'border-radius-25': premiseMapInput['serviceNo']}"
+                 [readonly]="!premiseMapInput['serviceNo']"
+                 [ngModel]="parent?.model?.premise?.serviceNo"
+                 (blur)="cancelUpdatePremise('serviceNo', serviceNo)"
+                 (keydown)="onInputChanged($event, 'serviceNo', serviceNo);" #serviceNo>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!premiseMapInput['serviceNo']"
+                    (mousedown)="editPremise('serviceNo', serviceNo); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="premiseMapInput['serviceNo']" class="save-options">
+            <button (mousedown)="cancelUpdatePremise('serviceNo', serviceNo); serviceNo.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('serviceNo', serviceNo); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Early termination charge:</div>
+    <div class="col-md-6 font-weight-bold">${{ ETC_FEE_OPTIONS[parent.model.premise.dwellingType] }} per remaining month</div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Security deposit:</div>
+    <div class="col-md-6 font-weight-bold">$0.00</div>
+  </div>
+
+  <div class="order-customer-review">
+    <div class="clearfix pb-4">
+      <div class="float-left font-weight-bold">Customer Details</div>
+      <!--<div class="float-right text-danger font-weight-bold">-->
+        <!--<a [routerLink]="['..', ORDER_ROUTES.PERSONAL_PARTICULAR]" class="text-danger">Edit</a>-->
+      <!--</div>-->
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Full name:</div>
+      <div class="col-md-6 font-weight-bold">
+        <div class="card-text-right p-0">
+          <div class="input-group">
+            <input type="text" class="form-control review-input background-unset" id="identificationName"
+                   name="identificationName"
+                   [ngClass]="{'border-right-radius-0': !reviewMapInput['identificationName'], 'border-radius-25': reviewMapInput['identificationName']}"
+                   [readonly]="!reviewMapInput['identificationName']"
+                   [ngModel]="parent?.model?.identificationName"
+                   (blur)="cancelUpdateReview('identificationName', identificationName)"
+                   (keydown)="onInputChanged($event, 'identificationName', identificationName)" #identificationName>
+            <div class="input-group-prepend border-left-0">
+              <button *ngIf="!reviewMapInput['identificationName']"
+                      (mousedown)="editReview('identificationName', identificationName); $event.preventDefault()"
+                      class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </div>
+            <div *ngIf="reviewMapInput['identificationName']" class="save-options">
+              <button (mousedown)="cancelUpdateReview('identificationName', identificationName); identificationName.blur();"
+                      class="action-button" style="cursor: pointer; color: #CE2A29">
+                <i class="fas fa-times"></i>
+              </button>
+              <button (mousedown)="validate('identificationName', identificationName); $event.preventDefault()"
+                      class="action-button" style="cursor: pointer; color: #00D885">
+                <i class="fas fa-check"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Identification type:</div>
+      <div class="col-md-6 font-weight-bold">{{ parent.model.identificationType }}</div>
+    </div>
+
+    <div *ngIf="parent.model.identificationType === IdentificationType.EmploymentPass || parent.model.identificationType === IdentificationType.WorkPermit" class="row pb-2">
+      <div class="col-md-6">Expiry date:</div>
+      <div class="col-md-6 font-weight-bold">{{ parent.model.identificationExpiryDate }}</div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">NRIC No. / FIN:</div>
+      <div class="col-md-6 font-weight-bold">
+        <div class="card-text-right p-0">
+          <div class="input-group">
+            <input type="text" class="form-control review-input background-unset" id="identificationNo"
+                   name="identificationNo"
+                   [ngClass]="{'border-right-radius-0': !reviewMapInput['identificationNo'], 'border-radius-25': reviewMapInput['identificationNo']}"
+                   [readonly]="!reviewMapInput['identificationNo']"
+                   [ngModel]="parent?.model?.identificationNo"
+                   (blur)="cancelUpdateReview('identificationNo', identificationNo)"
+                   (keydown)="onInputChanged($event, 'identificationNo', identificationNo)" #identificationNo>
+            <div class="input-group-prepend border-left-0">
+              <button *ngIf="!reviewMapInput['identificationNo']"
+                      (mousedown)="editReview('identificationNo', identificationNo); $event.preventDefault()"
+                      class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </div>
+            <div *ngIf="reviewMapInput['identificationNo']" class="save-options">
+              <button (mousedown)="cancelUpdateReview('identificationNo', identificationNo); identificationNo.blur();"
+                      class="action-button" style="cursor: pointer; color: #CE2A29">
+                <i class="fas fa-times"></i>
+              </button>
+              <button (mousedown)="validate('identificationNo', identificationNo); $event.preventDefault()"
+                      class="action-button" style="cursor: pointer; color: #00D885">
+                <i class="fas fa-check"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Email address:</div>
+      <div class="col-md-6 font-weight-bold">{{ parent.model.email }}</div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Mobile number:</div>
+      <div class="col-md-6 font-weight-bold">{{ parent.model.mobileNo }}</div>
+    </div>
+  </div>
+
+  <div class="clearfix pb-3">
+    <div class="float-left font-weight-bold">Service address</div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Block/House No.:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="houseNo"
+                 name="houseNo"
+                 [ngClass]="{'border-right-radius-0': !serviceAddressMapInput['houseNo'], 'border-radius-25': serviceAddressMapInput['houseNo']}"
+                 [readonly]="!serviceAddressMapInput['houseNo']"
+                 [ngModel]="serviceAddress?.houseNo"
+                 (blur)="cancelUpdateService('houseNo', houseNo)"
+                 (keydown)="onInputChanged($event, 'houseNo', houseNo)" #houseNo>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!serviceAddressMapInput['houseNo']"
+                    (mousedown)="editService('houseNo', houseNo); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="serviceAddressMapInput['houseNo']" class="save-options">
+            <button (mousedown)="cancelUpdateService('houseNo', houseNo); houseNo.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('houseNo', houseNo); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Level - Unit No.:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="levelUnit"
+                 name="levelUnit"
+                 [ngClass]="{'border-right-radius-0': !serviceAddressMapInput['levelUnit'], 'border-radius-25': serviceAddressMapInput['levelUnit']}"
+                 [readonly]="!serviceAddressMapInput['levelUnit']"
+                 [ngModel]="serviceAddress?.levelUnit"
+                 (blur)="cancelUpdateService('levelUnit', levelUnit)"
+                 (keydown)="onInputChanged($event, 'levelUnit', levelUnit)" #levelUnit>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!serviceAddressMapInput['levelUnit']"
+                    (mousedown)="editService('levelUnit', levelUnit); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="serviceAddressMapInput['levelUnit']" class="save-options">
+            <button (mousedown)="cancelUpdateService('levelUnit', levelUnit); houseNo.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('levelUnit', levelUnit); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Street name:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="streetName"
+                 name="streetName"
+                 [ngClass]="{'border-right-radius-0': !serviceAddressMapInput['streetName'], 'border-radius-25': serviceAddressMapInput['streetName']}"
+                 [readonly]="!serviceAddressMapInput['streetName']"
+                 [ngModel]="serviceAddress?.streetName"
+                 (blur)="cancelUpdateService('streetName', streetName)"
+                 (keydown)="onInputChanged($event, 'streetName', streetName)" #streetName>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!serviceAddressMapInput['streetName']"
+                    (mousedown)="editService('streetName', streetName); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="serviceAddressMapInput['streetName']" class="save-options">
+            <button (mousedown)="cancelUpdateService('streetName', streetName); streetName.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('streetName', streetName); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Building name:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="buildingName"
+                 name="buildingName"
+                 [ngClass]="{'border-right-radius-0': !serviceAddressMapInput['buildingName'], 'border-radius-25': serviceAddressMapInput['buildingName']}"
+                 [readonly]="!serviceAddressMapInput['buildingName']"
+                 [ngModel]="serviceAddress?.buildingName"
+                 (blur)="cancelUpdateService('buildingName', buildingName)"
+                 (keydown)="onInputChanged($event, 'buildingName', buildingName)" #buildingName>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!serviceAddressMapInput['buildingName']"
+                    (mousedown)="editService('buildingName', buildingName); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="serviceAddressMapInput['buildingName']" class="save-options">
+            <button (mousedown)="cancelUpdateService('buildingName', buildingName); buildingName.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('buildingName', buildingName); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="buildingName.value === ''" class="invalid-feedback">
+          <i style="padding-top: 8px" class="fas fa-exclamation" title="identificationNo address is required"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Postal code:</div>
+    <div class="col-md-6 font-weight-bold">
+      <div class="card-text-right p-0">
+        <div class="input-group">
+          <input type="text" class="form-control review-input background-unset" id="servicePostalCode"
+                 name="servicePostalCode"
+                 [ngClass]="{'border-right-radius-0': !premiseMapInput['servicePostalCode'], 'border-radius-25': premiseMapInput['servicePostalCode']}"
+                 [readonly]="!premiseMapInput['servicePostalCode']"
+                 [ngModel]="parent.model.premise?.servicePostalCode"
+                 (blur)="cancelUpdatePremise('servicePostalCode', servicePostalCode)"
+                 (keydown)="onInputChanged($event, 'servicePostalCode', servicePostalCode)" #servicePostalCode>
+          <div class="input-group-prepend border-left-0">
+            <button *ngIf="!premiseMapInput['servicePostalCode']"
+                    (mousedown)="editPremise('servicePostalCode', servicePostalCode); $event.preventDefault()"
+                    class="input-group-text form-control" style="cursor: pointer; border: unset; height: 30px">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+          <div *ngIf="premiseMapInput['servicePostalCode']" class="save-options">
+            <button (mousedown)="cancelUpdatePremise('servicePostalCode', servicePostalCode); servicePostalCode.blur();"
+                    class="action-button" style="cursor: pointer; color: #CE2A29">
+              <i class="fas fa-times"></i>
+            </button>
+            <button (mousedown)="validate('servicePostalCode', servicePostalCode); $event.preventDefault()"
+                    class="action-button" style="cursor: pointer; color: #00D885">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row pb-2">
+    <div class="col-md-6">Dwelling type:</div>
+    <div class="col-md-6 font-weight-bold">
+      {{ parent.model.premise.dwellingType }}
+    </div>
+  </div>
+
+  <div class="order-promotion-summary">
+    <div class="clearfix pb-3">
+      <div class="float-left font-weight-bold">Promotion summary</div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Rebate:</div>
+      <div class="col-md-6 font-weight-bold">
+        {{ parent.model.referralCode
+        ? ( rebateAmount === 0
+          ? 'Referral/Promo Code: ' + parent.model.referralCode
+          : ( rebateAmount < 0 ? rebateAmount * (-1) : rebateAmount ) + '$ (Referral/Promo Code: ' + parent.model.referralCode + ')'
+        )
+        : 'Not applicable' }}
+      </div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Gift:</div>
+      <div class="col-md-6 font-weight-bold">Not applicable</div>
+    </div>
+
+    <div class="row pb-2">
+      <div class="col-md-6">Others:</div>
+      <div class="col-md-6 font-weight-bold">Not applicable</div>
+    </div>
+  </div>
+
+  <p><strong>Customer Acknowledgement</strong></p>
+  <p class="text-justify">• I have read and understood the Consumer Advisory Notice and Fact Sheet presented to me and agree to all the terms set out in the Fact Sheet.</p>
+  <p class="text-justify">• I confirm that information given in this online sign-up is factual, accurate and complete.</p>
+  <p class="text-justify">• I understand that this is an application to Sunseap Energy Pte. Ltd. (“Sunseap”) for the supply of electricity.</p>
+  <p class="text-justify">• I acknowledge that Sunseap may decline acceptance of my application for such electricity services at its discretion.
+    I agree that my application for such electricity services when accepted, will constitute a binding contract between myself and Sunseap.
+    I accept Sunseap’s standard terms and conditions for the supply of electricity which can be found at www.sunseap.com/terms-conditions/residential.</p>
+  <p class="text-justify">• By providing the information set out above, I consent to Sunseap, and its related corporations (collectively, “Sunseap”),
+    as well as their respective representatives, agents and service providers, collecting, using or disclosing my personal data for purposes reasonably required by Sunseap
+    to provide the products and services which I am applying for, as set out in Sunseap’s Privacy Policy that can be found at https://www.sunseap.com/privacy/, which I have read and understood.</p>
+  <p class="text-justify">• I acknowledge that the registration information is true and correct and that I have read, understood and agreed to the Service Agreement and General Terms & Conditions outlined in this
+    online registration form. By filling up this Registration Form, I hereby agree and consent that my personal data provided in this form may be collected, used, processed and disclosed by
+    Sunseap Energy Pte. Ltd. for the purposes of processing my registration, in accordance with the Personal Data Protection Act 2012 and all subsidiary legislation related thereto. In respect
+    of disclosure, I understand that Sunseap Energy Pte. Ltd. may disclose my personal data to third parties (which may be in or outside of Singapore) where necessary for such purposes.
+    I understand that photography and videography may be conducted during the roadshow event(s) and I consent to Sunseap Energy Pte. Ltd. taking photographs and videos of myself and using
+    the same for the purposes of event reporting, marketing, publicity, and media/social media. I further consent to Sunseap Energy Pte. Ltd. disclosing such photographs and videos to third
+    party media entities (whether in Singapore or otherwise) for publicity purposes and Sunseap Energy Pte. Ltd. may identify me by name.</p>
+
+  <label class="control control--checkbox text-justify">I consent to Sunseap contacting me for their marketing and promotional purposes. (Optional)
+    <input type="checkbox" [(ngModel)]="checked"/>
+    <div class="control__indicator"></div>
+  </label>
+
+  <label class="control control--checkbox text-justify">I hereby acknowledge that I have read, understood and consent to the above terms and conditions.
+    <input type="checkbox" [(ngModel)]="acknowledge"/>
+    <div class="control__indicator"></div>
+  </label>
+
+  <div class="pt-5 d-flex justify-content-center mb-4 pb-4">
+    <button [disabled]="!isExpiryDateValid() || !acknowledge" class="btn step-next" (click)="onSubmit(submitBtn)" #submitBtn>
+      <span>Confirm Order</span>
+    </button>
+  </div>
+
+  <ng-template #warningModal>
+    <!-- Modal Header -->
+    <div class="modal-header border-bottom-0 pb-0">
+      <h4 class="modal-title">&nbsp;</h4>
+      <button type="button" class="close" (click)="modal.hide();">&times;</button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="modal-body d-flex flex-column pt-0 pl-5 ml-5 pr-5 mr-5">
+      <div class="text-center">
+        <h5><strong>Data Verification</strong></h5>
+      </div>
+      <div class="pt-5 pb-4 text-center">
+        <p style="color: red" [innerHTML]="warningMessage"></p>
+      </div>
+    </div>
+
+    <div class="my-4 mx-auto">
+      <button type="button" class="btn btn-submit" (click)="modal.hide();">
+        <span>OK</span>
+      </button>
+    </div>
+
+  </ng-template>
+</div>
+<!--<div style="position: absolute; top: calc(100vh - 100px); right: 30px;">-->
+  <!--<div class="share-buttons d-flex justify-content-center pt-sm-4 mt-sm-1">-->
+    <!--<a (click)="scrollToBottom()" href="javascript:void(0)" class="btn rounded-circle btn-social"-->
+       <!--style="border: 1px solid green;" target="_top">-->
+      <!--<i class="fas fa-angle-double-down slide-effect"></i>-->
+    <!--</a>-->
+  <!--</div>-->
+<!--</div>-->

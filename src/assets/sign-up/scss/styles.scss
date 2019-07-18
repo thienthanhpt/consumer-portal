@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+// Custom variables for app
+@import "variables";
+
+// Import Font Awesome source file
+@import "../../../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome";
+@import "../../../../node_modules/@fortawesome/fontawesome-free/scss/solid";
+@import "../../../../node_modules/@fortawesome/fontawesome-free/scss/regular";
+
+// Import Bootstrap source files from node_modules
+@import "../../../../node_modules/bootstrap/scss/bootstrap";
+@import "../../../../node_modules/ngx-bootstrap/datepicker/bs-datepicker.scss";
+// Custom styles
+@import "fonts";
+@import "custom";

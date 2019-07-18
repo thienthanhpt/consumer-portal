@@ -1,0 +1,180 @@
+<div class="row mb-sm-3">
+  <div class="card-deck mx-0 px-sm-0 col-sm-12">
+    <div class="card border-top-blue-dark" *ngIf="billingReport">
+      <div class="card-body pb-0">
+        <div class="card-hero bg-overview">
+          <p class="cart-text font-weight-bold">Overview</p>
+          <p class="card-text">{{ getFullDate(billingReport.currentBilling.invoiceDate) }}</p>
+          <h2 class="card-title">{{ billingReport.currentBilling.usageAmount?.toFixed(2) || '0' }} kWh</h2>
+          <p class="card-text">Your bill for {{ getMonthOfYear(billingReport.currentBilling.invoiceDate) }}</p>
+          <h2 class="card-title">S$ {{ billingReport.currentBilling.totalAmountPayable?.toFixed(2) }}</h2>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="text-muted card-text">Total amount payable</span>
+            <h1 class="card-title font-weight-bold">S$ {{ billingReport.totalAmount?.toFixed(2) }}</h1>
+          </div>
+          <button type="button" [disabled]="!isPayable(billingReport?.totalAmount)" (click)="handleHostedCheckout()" class="btn btn-red text-white font-weight-bold px-4">Pay my bill</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="border-0 card-header font-weight-bold">
+        Electricity Consumption
+      </div>
+      <div class="card-body d-flex justify-content-center align-items-center">
+        <canvas (click)="openChartLarger(chartType.Electricity)" id="electricityConsumption">{{ electricityConsumption }}</canvas>
+        <div class="btn-pagination">
+          <i *ngIf="currentElectricPage > 0" class="fas fa-caret-left" (click)="onPageChange(pageChangedType.Previous, chartType.Electricity)"></i>
+          <i *ngIf="currentElectricPage <= 0" class="fas fa-caret-left text-muted"></i>
+          <i *ngIf="totalElectricBillCount > electricPagination.limit" class="fas fa-caret-right float-right" (click)="onPageChange(pageChangedType.Next, chartType.Electricity)"></i>
+          <i *ngIf="totalElectricBillCount <= electricPagination.limit" class="fas fa-caret-right float-right text-muted"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="border-0 card-header text-green-dark font-weight-bold">
+        <span *ngIf="selectedBillViewType === billsViewType.Table" class="text-black">My Bills</span>
+        <span *ngIf="selectedBillViewType === billsViewType.Chart" class="text-black">Past Bills</span>
+        <span class="float-right">
+          <span class="fa-stack fa-1x mr--5" [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Chart) }">
+            <i class="fas fa-square fa-stack-2x text-dark"></i>
+            <i class="fas fa-table fa-stack-1x fa-inverse" (click)="selectedBillViewType = billsViewType.Table"></i>
+          </span>
+          <span class="fa-stack fa-1x" [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Chart) }">
+            <i class="fas fa-square fa-stack-2x text-white"></i>
+            <i class="far fa-chart-bar fa-stack-1x fa-inverse text-dark" style="cursor: pointer" (click)="selectedBillViewType = billsViewType.Chart"></i>
+          </span>
+          <span class="fa-stack fa-1x mr--5" [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Table) }">
+            <i class="fas fa-square fa-stack-2x text-white"></i>
+            <i class="fas fa-table fa-stack-1x fa-inverse text-dark" style="cursor: pointer" (click)="selectedBillViewType = billsViewType.Table"></i>
+          </span>
+          <span class="fa-stack fa-1x" [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Table) }">
+            <i class="fas fa-square fa-stack-2x text-dark"></i>
+            <i class="far fa-chart-bar fa-stack-1x fa-inverse" (click)="selectedBillViewType = billsViewType.Chart"></i>
+          </span>
+        </span>
+      </div>
+      <div class="card-body">
+        <app-my-bills [totalItems]="totalBillCount"
+                      [items]="listBill"
+                      [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Chart) }"
+                      [limit]="billingPagination.limit"
+                      [currentPage]="currentPage"
+                      [currentBillingId]="billingReport?.currentBilling?.id"
+                      (onSortData)="onSortData($event)">
+        </app-my-bills>
+        <div [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Table),
+                          'd-block': (selectedBillViewType == billsViewType.Chart) }">
+          <canvas id="pastInvoice"
+          class="pr-lg-5 pl-lg-5">{{ pastInvoice }}</canvas>
+          <div class="btn-pagination">
+            <i *ngIf="currentPastPage > 0" class="fas fa-caret-left" (click)="onPageChange(pageChangedType.Previous, chartType.PastInvoice)"></i>
+            <i *ngIf="currentPastPage <= 0" class="fas fa-caret-left text-muted"></i>
+            <i *ngIf="totalBillCount > pastBillsPagination.limit" class="fas fa-caret-right float-right" (click)="onPageChange(pageChangedType.Next, chartType.PastInvoice)"></i>
+            <i *ngIf="totalBillCount <= pastBillsPagination.limit" class="fas fa-caret-right float-right text-muted"></i>
+          </div>
+        </div>
+        <a *ngIf="selectedBillViewType === billsViewType.Table" class="float-right text-black"
+           [routerLink]="['/' + ROUTES.LIST_ALL_BILLS]">
+          <small>See all my bills</small>
+          <i class="fas fa-caret-right float-right ml-2 mt-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="border-0 card-header text-green-dark font-weight-bold">
+        <span class="text-black">My Payments</span>
+      </div>
+      <div class="card-body">
+        <app-my-payments [items]="listTransaction"
+                         (onSortData)="onSortTransactions($event)">
+        </app-my-payments>
+        <a class="float-right text-black"
+           [routerLink]="['/' + ROUTES.LIST_PAYMENT]">
+          <small>See all payments</small>
+          <i class="fas fa-caret-right float-right ml-2 mt-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--<div class="row mb-3">-->
+  <!--<div class="col-sm-12">-->
+    <!--<div class="card">-->
+      <!--<div class="border-0 card-header text-green font-weight-bold">-->
+        <!--<span class="text-black">Your contributions equivalence</span>-->
+      <!--</div>-->
+      <!--<div class="card-body row p-5 font-weight-bold">-->
+        <!--<div class="col-4 p-4 bg-img-tree text-center">-->
+          <!--<img class="img-fluid height-lg-100 height-md-90 height-sm-70 height-xs-50" src="/assets/my-account/images/content/contribution/tree.png" alt="">-->
+          <!--<div class="text-center">-->
+            <!--<h1 class="font-weight-bold">36</h1>-->
+            <!--<h5 class="text-secondary">of trees saved</h5>-->
+          <!--</div>-->
+        <!--</div>-->
+        <!--<div class="col-4 p-4 bg-img-car text-center">-->
+          <!--<div class="">-->
+            <!--<img class="img-fluid height-lg-100 height-md-90 height-sm-70 height-xs-50" src="/assets/my-account/images/content/contribution/car.png" alt="">-->
+          <!--</div>-->
+          <!--<div class="text-center">-->
+            <!--<h1 class="font-weight-bold">4</h1>-->
+            <!--<h5>of car taken of the road</h5>-->
+          <!--</div>-->
+        <!--</div>-->
+        <!--<div class="col-4 p-4 bg-img-cloud text-center justify-content-between">-->
+          <!--<img class="img-fluid height-xs-50 height-sm-70 height-md-90 height-lg-100" src="/assets/my-account/images/content/contribution/cloud.png" alt="">-->
+          <!--<div class="text-center">-->
+            <!--<h1 class="font-weight-bold">12Kg</h1>-->
+            <!--<h5>of CO2 saved</h5>-->
+          <!--</div>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div>-->
+
+<ng-template #chartLargerModal>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4>Past Invoice</h4>
+      <button type="button" class="close text-right" (click)="electricityConsumptionChart.options.maintainAspectRatio = false; modal.hide();">x</button>
+    </div>
+    <div class="modal-body">
+      <canvas id="chartLarger" class="h-100 mt-5">{{ chartLarger }}</canvas>
+      <div class="btn-pagination-larger">
+        <i *ngIf="currentElectricPage > 0" class="fas fa-caret-left" (click)="onPageChange(pageChangedType.Previous, chartType.Electricity)"></i>
+        <i *ngIf="currentElectricPage <= 0" class="fas fa-caret-left text-muted"></i>
+        <i *ngIf="totalElectricBillCount > electricPagination.limit" class="fas fa-caret-right float-right" (click)="onPageChange(pageChangedType.Next, chartType.Electricity)"></i>
+        <i *ngIf="totalElectricBillCount <= electricPagination.limit" class="fas fa-caret-right float-right text-muted"></i>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #alertModal>
+  <div class="modal-header border-bottom-0 pb-0">
+    <button type="button" class="close pull-right" aria-label="Close" (click)="closeAlertModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+    <div class="mr-sm-4 ml-sm-4 text-center">
+      <h5 class="font-weight-bold">Transaction Verification</h5>
+      <p>This transaction was successful and your payment is being processed.</p>
+      <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="closeAlertModal()">OK</button>
+    </div>
+  </div>
+</ng-template>

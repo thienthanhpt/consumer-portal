@@ -1,0 +1,27 @@
+<div class="custom-file c-file-upload">
+  <input type="hidden" [name]="'fileUploaded-' + documentName" [ngModel]="document?.uploadedId"
+         [required]="required"
+         #fileUploaded="ngModel">
+  <input type="file" name="idFile" [id]="'idFile-' + documentName" class="custom-file-input" accept=".pdf,image/*"
+         [class.is-valid]="document?.uploadedId"
+         [class.is-invalid]="fileUploaded.invalid && (fileUploaded.touched || isSubmitted)"
+         (change)="onSelectFile($event.target.files[0], documentName)" #idFile/>
+  <div class="custom-file-label">
+    <label [for]="'fileUploaded-' + documentName">{{ document?.fileName || placeHolder || '&nbsp;' }}</label>
+  </div>
+  <span *ngIf="document" class="fa-stack fa-xs btn-cancel-upload" (click)="cancelUpload(documentName); idFile.value = ''">
+    <i class="fas fa-circle fa-stack-2x"></i>
+    <i class="fas fa-trash-alt fa-stack-1x fa-inverse"></i>
+  </span>
+  <button type="button" class="btn input-button btn-up-down-load"
+          (click)="idFile.click()">
+    <span class="d-none d-sm-block">UPLOAD</span>
+    <span class="d-block d-sm-none"><i class="fas fa-upload"></i></span>
+  </button>
+  <div class="valid-feedback">Upload successful</div>
+  <div *ngIf="fileUploaded.invalid && (fileUploaded.touched || isSubmitted)" class="invalid-feedback">
+    <div *ngIf="fileUploaded?.errors.required">
+      <i>Document upload is required</i>
+    </div>
+  </div>
+</div>

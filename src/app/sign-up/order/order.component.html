@@ -1,0 +1,71 @@
+<header id="header" class="col-xs-12 pt-3 pb-3">
+  <div class="col-xs-12 content-header">
+    <div class="pr-0 pl-0 d-flex col-xs-12">
+      <a class="col-xs-6" href="https://www.sunseap.com/residential/electricity-plans/">
+        <img src="/assets/sign-up/images/logo/large-logo.png" includeVersion height="50" alt="">
+      </a>
+      <a class="h5 ml-auto pt-3 col-xs-6" href="https://www.sunseap.com/contact/enquiries/" target="blank">Contact</a>
+    </div>
+  </div>
+</header>
+
+<section class="body">
+  <div class="container-fluid p-0 scroll-view">
+    <div class="row">
+      <div class="col-md-4 left-image d-none d-md-block">
+        <img src="/assets/sign-up/images/background/bg-garden-building.jpg" includeVersion alt="Marketing image"
+             onerror="this.onerror = null; this.src='/assets/sign-up/images/background/default/bg-garden-building';"
+             *ngIf="activeTab !== OrderTab.EnterDetail">
+        <img src="/assets/sign-up/images/background/bg-green-building.jpg" includeVersion alt="Marketing image"
+             onerror="this.onerror = null; this.src='/assets/sign-up/images/background/default/bg-green-building.jpg';"
+             *ngIf="activeTab === OrderTab.EnterDetail">
+      </div>
+
+      <div class="col-md-8">
+        <div class="row-tab container p-0">
+          <div class="row px-4">
+            <div class="col-4 order-tab d-flex justify-content-center" [ngClass]="{'order-tab-active': (activeTab == OrderTab.EnterDetail), 'order-tab-available': (activeTab == OrderTab.UploadDocuments || activeTab == OrderTab.ReviewOrder)}">
+              <a class="text-center p-0 p-md-auto" href="javascript:void(0)">Enter your details</a>
+            </div>
+            <div class="col-4 order-tab d-flex justify-content-center" [ngClass]="{'order-tab-active': (activeTab == OrderTab.UploadDocuments), 'order-tab-available': (activeTab == OrderTab.ReviewOrder)}">
+              <a class="text-center p-0 p-md-auto" href="javascript:void(0)">Upload documents</a>
+            </div>
+            <div class="col-4 order-tab d-flex justify-content-center" [class.order-tab-active]="activeTab == OrderTab.ReviewOrder">
+              <a class="text-center p-0 p-md-auto" href="javascript:void(0)">Review order</a>
+            </div>
+          </div>
+        </div>
+
+        <div id="step-section" class="d-flex justify-content-center align-items-center row text-center step-section pt-4 pb-4">
+          <ng-container *ngIf="activeTab == OrderTab.EnterDetail">
+            <ng-container *ngFor="let route of ENTER_DETAIL_STEP_ROUTES; let index = index">
+              <a [ngClass]="{'step-list': true, 'available': index <= currentStepIndex, 'active': index == activeStepIndex}" href="javascript:void(0)">{{(index + 1)}}</a>
+            </ng-container>
+          </ng-container>
+
+          <ng-container *ngIf="activeTab == OrderTab.ReviewOrder">
+            <ng-container *ngFor="let route of REVIEW_STEP_ROUTES; let index = index">
+              <a [ngClass]="{'step-list': true, 'available': (index + ENTER_DETAIL_STEP_ROUTES.length + 1) <= currentStepIndex, 'active': (index + ENTER_DETAIL_STEP_ROUTES.length + 1) == activeStepIndex}" href="javascript:void(0)">{{(index + 1)}}</a>
+            </ng-container>
+          </ng-container>
+        </div>
+
+        <div class="container">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #errorModal>
+      <div class="modal-header">
+        <h4 class="modal-title pull-left">{{ errorModalTitle }}</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" [innerHTML]="errorModalMessage"></div>
+    </ng-template>
+
+  </div>
+
+</section>

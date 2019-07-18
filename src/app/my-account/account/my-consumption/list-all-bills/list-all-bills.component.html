@@ -1,0 +1,28 @@
+<div class="row mb-3">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="border-0 card-header text-red font-weight-bold">
+        <span class="text-dark">My Bills</span>
+      </div>
+      <div class="card-body">
+        <app-my-bills [totalItems]="totalBillCount"
+                      [items]="listBill"
+                      [ngClass]="{ 'd-none': (selectedBillViewType == billsViewType.Chart) }"
+                      [limit]="billingPagination.limit"
+                      [currentPage]="currentPage"
+                      [currentBillingId]="billingReport?.currentBilling?.id"
+                      (onPageChanged)="reloadBills($event)"
+                      (onSortData)="onSortData($event)">
+        </app-my-bills>
+        <mat-paginator showFirstLastButtons
+                       class="pr-lg-5"
+                       *ngIf="totalBillCount > billingPagination.limit"
+                       [pageIndex]="currentPage"
+                       [length]="totalBillCount"
+                       [pageSize]="billingPagination.limit"
+                       (page)="nextPage($event)">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>

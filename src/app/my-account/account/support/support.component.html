@@ -1,0 +1,311 @@
+<div id="support" class="row" style="margin-top: -33px;" [ngStyle]="{'height': !isNewRequest ? 'calc(100vh - 100px)' : 'unset'}"
+     [ngClass]="{'show-detail': isNewRequest === false, 'show-new-request': isNewRequest === true}">
+  <div id="list-request" class="col-md-3 col-sm-12" style="background: #d4dbdb; padding-right: 5px; padding-left: 5px; overflow-y: auto; overflow-x: hidden">
+    <ul style="list-style-type: none; padding-inline-start: unset;">
+      <li style="border: unset;">
+        <div style="position: relative; height: 70px; text-align: center; align-items: center" class="row d-flex justify-content-center">
+          <button (click)="showNewRequest()" class="btn btn-danger" style="padding-top: 3px; width: 180px; height: 30px">New Request</button>
+        </div>
+        <span class="text-muted">Your tickets:</span>
+      </li>
+      <li style="height: 90px; border-radius: 3px; background: #FFFFFF; margin-top: 5px; padding-top: 10px; cursor: pointer; position: relative"
+          *ngFor="let request of listRequest" (click)="onSelectRequest(request)" [ngClass]="{'cuz-active': request.id === selectedRequest.id}">
+        <div class="row" style="font-size: 15px; height: 15px">
+          <div class="col-6" style="padding-left: 20px">ID:{{request.id}}</div>
+          <div class="col-6 text-right" style="padding-right: 20px;">{{request.requestDate}}</div>
+        </div>
+        <div class="row" style="height: 25px;">
+          <div class="col-12" style="padding-left: 20px">
+            <strong>{{request.requestType}}</strong>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6" style="padding-left: 20px">
+            <span class="badge" [ngClass]="getStatus(request.status)">{{request.status}}</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div id="new-request"  *ngIf="isNewRequest" class="col-md-9 col-sm-12">
+    <div class="page-content">
+      <div class="container-fluid">
+        <div class="row mb-3 mt-3">
+          <div class="card-deck mx-0 px-sm-0 col-sm-12">
+            <div class="card border-top-blue-dark">
+              <div class="card-body">
+                <div class="d-flex" style="position: relative">
+                  <h5><strong>New Request</strong></h5>
+                  <h5 class="title-opacity" style="position: absolute; right: 0px"><strong>Save Draft</strong></h5>
+                </div>
+                <div class="container" style="font-size: 15px">
+                  <div class="card card-body bg-light">
+
+                    <form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+                      <div class="form-row">
+
+                        <div class="form-group col-lg-6">
+                          <label class="form-control-label" for="email">
+                            <strong>Email address*</strong>
+                          </label>
+                          <input name="email" id="email" class="form-control"
+                                 [class.is-invalid]="email.invalid && (email.touched || form.submitted)"
+                                 required email #email/>
+
+                          <div *ngIf="email.invalid && (email.touched || form.submitted)" class="invalid-feedback">
+                            <div *ngIf="email?.errors.required">
+                              <i>Email address is required</i>
+                            </div>
+                            <div *ngIf="!email?.errors.required && email?.errors.email">
+                              <i>Email address is invalid</i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group col-lg-6">
+                          <label class="form-control-label" for="mobileNo">
+                            <strong>Mobile No.*</strong>
+                          </label>
+                          <input name="mobileNo" id="mobileNo" class="form-control"
+                                 [class.is-invalid]="mobileNo.invalid && (mobileNo.touched || form.submitted)"
+                                 required #mobileNo/>
+
+                          <div *ngIf="mobileNo.invalid && (mobileNo.touched || form.submitted)" class="invalid-feedback">
+                            <div *ngIf="mobileNo?.errors.required">
+                              <i>Mobile No. is required</i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label class="form-control-label" for="serviceAddress">
+                            <strong>Service Address*</strong>
+                          </label>
+                          <input name="serviceAddress" id="serviceAddress" class="form-control"
+                                 [class.is-invalid]="serviceAddress.invalid && (serviceAddress.touched || form.submitted)"
+                                 required
+                                 #serviceAddress/>
+
+                          <div *ngIf="serviceAddress.invalid && (serviceAddress.touched || form.submitted)" class="invalid-feedback">
+                            <div *ngIf="serviceAddress?.errors.required">
+                              <i>Service address is required</i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label class="form-control-label" for="requestType">
+                            <strong>Request Type*</strong>
+                          </label>
+                          <input name="requestType" id="requestType" class="form-control"
+                                 [class.is-invalid]="requestType.invalid && (requestType.touched || form.submitted)"
+                                 required
+                                 #requestType/>
+
+                          <div *ngIf="requestType.invalid && (requestType.touched || form.submitted)" class="invalid-feedback">
+                            <div *ngIf="requestType?.errors.required">
+                              <i>Request type is required</i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="form-group col-12">
+                          <label class="form-control-label" for="message">
+                            <strong>Your Message*</strong>
+                          </label>
+                          <textarea name="message" id="message" class="form-control"
+                                 [class.is-invalid]="message.invalid && (message.touched || form.submitted)"
+                                 required rows="4"
+                                 #message></textarea>
+                          <div class="text-center" style="font-size: 12px; font-style: italic">
+                            By submitting the form, I authorize Sunseap to call me at the above number.All the * fileds are mandatory.
+                          </div>
+
+                          <div *ngIf="message.invalid && (message.touched || form.submitted)" class="invalid-feedback">
+                            <div *ngIf="message?.errors.required">
+                              <i>Message is required</i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-12">
+                          <div class="row justify-content-center">
+                            <button type="submit" class="btn btn-danger">Submit</button>
+                          </div>
+                        </div>
+
+                      </div>
+                    </form>
+
+                    <div class="row pt-1 justify-content-center">
+                      <button type="button" class="btn btn-light btn-resend-otp" style="width: 20%" (click)="showRequests()">
+                        <span>Cancel</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row mb-3 mt-3">
+                  <div class="col-12">
+                    <div class="text-center" style="font-size: 12px">
+                      If you prefer to speak to a customer care officer, please call our hotline, open from
+                      Mondays to Fridays, 9am to 6pm and Saturdays, 9am to 1pm.
+                    </div>
+                    <div class="text-center" style="font-size: 15px">
+                      <strong>Hotline: +65 6255 5623</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="request-detail" *ngIf="isNewRequest === false" class="col-md-9 col-sm-12" style="font-size: 15px">
+    <div class="row" style="background: #FFFFFF">
+      <div class="col-12" id="request-detail-info">
+        <div class="row">
+          <div class="col-1" id="request-detail-back">
+            <a (click)="showRequests()">
+              <img src="/assets/my-account/images/icons/back_arrow.png" alt="Go back">
+            </a>
+          </div>
+          <div class="col-md-6 col-5 title-opacity pl-3">
+            <div>ID:0000</div>
+            <div>Date: 12/09/2018</div>
+          </div>
+          <div class="col-md-6 col-6 text-right pr-3" style="font-size: 20px">
+            <span class="badge badge-success">Resolved</span>
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-12 pl-3">
+            <div>From: abc.def@ghi.com</div>
+            <div>Phone number: +84123456789</div>
+            <div>Service address: 48a cmt8 p12 q10 tphcm</div>
+          </div>
+        </div>
+        <br>
+
+        <div class="row">
+          <div class="col-12 pl-3">
+            <div>
+              <strong>Request type: Billing dispute</strong>
+            </div>
+            <p class="text-justify">I acknowledge that the registration information is true and correct and that I have read, understood and agreed to the Service Agreement and General Terms & Conditions outlined in this
+              online registration form.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <ul class="chat">
+        <li class="left clearfix">
+          <a class="pull-left rounded-circle" style="background: #CE2A29; height: 20px; width: 20px; padding-left: 3px; color: #FFFFFF" target="_self">
+            <i class="fas fa-headset"></i>
+          </a>
+          <div class="chat-body clearfix left-top-arrow">
+            <div class="col-12">
+              <div class="">
+                <strong class="primary-font">Jack Sparrow</strong>
+                <small class="text-muted ml-1">
+                  <span class="glyphicon glyphicon-time"></span>- 12 mins ago
+                </small>
+              </div>
+              <div class="text-left">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper
+                ligula sodales.
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="right clearfix">
+          <a class="pull-right rounded-circle" style="background: rgb(38, 62, 80); height: 20px; width: 20px; padding-left: 3px; color: #FFFFFF" target="_self">
+            <i class="far fa-user"></i>
+          </a>
+          <div class="chat-body clearfix right-top-arrow">
+            <div class="col-12">
+              <div class="text-right">
+                <small class="text-muted mr-1">
+                  <span class="glyphicon glyphicon-time"></span>13 mins ago -
+                </small>
+                <strong class="primary-font">Bhaumik Patel</strong>
+              </div>
+              <div class="text-right">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="left clearfix">
+          <a class="pull-left rounded-circle" style="background: #CE2A29; height: 20px; width: 20px; padding-left: 3px; color: #FFFFFF" target="_self">
+            <i class="fas fa-headset"></i>
+          </a>
+          <div class="chat-body clearfix left-top-arrow">
+            <div class="col-12">
+              <div class="">
+                <strong class="primary-font">Jack Sparrow</strong>
+                <small class="text-muted ml-1">
+                  <span class="glyphicon glyphicon-time"></span>- 12 mins ago
+                </small>
+              </div>
+              <div class="text-left">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper
+                ligula sodales.
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="right clearfix">
+          <a class="pull-right rounded-circle" style="background: rgb(38, 62, 80); height: 20px; width: 20px; padding-left: 3px; color: #FFFFFF" target="_self">
+            <i class="far fa-user"></i>
+          </a>
+          <div class="chat-body clearfix right-top-arrow">
+            <div class="col-12">
+              <div class="text-right">
+                <small class="text-muted mr-1">
+                  <span class="glyphicon glyphicon-time"></span>13 mins ago -
+                </small>
+                <strong class="primary-font">Bhaumik Patel</strong>
+              </div>
+              <div class="text-right">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+              </div>
+            </div>
+          </div>
+        </li>
+
+      </ul>
+    </div>
+
+    <div class="row panel-footer">
+      <div class="col-md-11 col-10">
+        <div class="row d-flex">
+          <div class="input-group">
+            <input type="text" style="border-radius: 3rem" class="form-control" name="chat" placeholder="Type your message here...">
+            <div class="input-group-prepend" style="border-radius: 3rem; position: absolute; right: 10px; top: 10px; cursor: pointer; z-index: 100">
+              <i class="far fa-paper-plane"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-1 col-2">
+        <div class="row" style="padding-top: 10px; padding-left: 10px; cursor: pointer">
+          <div class="input-group">
+            <i class="far fa-images"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,643 @@
+<div *ngIf="!loaderService.status()">
+  <div class="row mb-sm-3">
+    <div class="card-deck mx-0 px-sm-0 col-sm-12">
+      <div class="card border-top-red">
+        <div class="card-body">
+          <h5><strong>Plan Summary</strong></h5>
+          <div class="row">
+            <div class="col-sm-8">
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">Plan Name:</div>
+                <div class="card-text-right">{{ account?.customer?.consumers &&
+                  consumerSelected?.contract.pricePlan }}</div>
+              </div>
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">Solar Energy:</div>
+                <div class="card-text-right">{{ account?.customer?.consumers &&
+                  consumerSelected?.contract.cleanEnergyPercentage }}%</div>
+              </div>
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">DOT/Fixed Rate:</div>
+                <div class="card-text-right">
+                  <span *ngIf="isDotPlan">
+                    <ng-container *ngFor="let promotion of consumerSelected?.contract.promotions; let last = last">
+                      <ng-container>{{ (promotion?.planRateValue * 100).toFixed(2) }}</ng-container>
+                      <ng-container *ngIf="!last"> / </ng-container>
+                      <ng-container *ngIf="last"> % DOT </ng-container>
+                    </ng-container>
+                    <ng-container *ngFor="let promotion of consumerSelected?.contract.promotions; let first = first; let last = last">
+                      <ng-container *ngIf="first && !last"> (first </ng-container>
+                      <ng-container *ngIf="!first"> / next </ng-container>
+                      <ng-container *ngIf="!(first && last)"> {{ promotion.applyingPeriod }} mths</ng-container>
+                      <ng-container *ngIf="!first && last">)</ng-container>
+                    </ng-container>
+                  </span>
+
+                  <span *ngIf="!isDotPlan">
+                    <ng-container *ngFor="let promotion of consumerSelected?.contract.promotions; let last = last">
+                      <ng-container>{{(promotion?.planRateValue * 100).toFixed(2)}}</ng-container>
+                      <ng-container *ngIf="!last"> / </ng-container>
+                      <ng-container *ngIf="last"> cents/kWh FIXED </ng-container>
+                    </ng-container>
+                    <ng-container *ngFor="let promotion of consumerSelected?.contract.promotions; let first = first; let last = last">
+                      <ng-container *ngIf="first && !last"> (first </ng-container>
+                      <ng-container *ngIf="!first"> / next </ng-container>
+                      <ng-container *ngIf="!(first && last)"> {{ promotion.applyingPeriod }} mths </ng-container>
+                      <ng-container *ngIf="!first && last">) - Excluding GST</ng-container>
+                      <ng-container *ngIf="first && last">- Excluding GST</ng-container>
+                    </ng-container>
+                  </span><br/>
+                </div>
+              </div>
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">Contract Start Date:</div>
+                <div class="card-text-right">
+                  {{ consumerSelected?.contract?.startDate}}
+                </div>
+              </div>
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">Contract End Date:</div>
+                <div class="card-text-right">
+                  {{ consumerSelected?.contract?.endDate}}
+                </div>
+              </div>
+              <div class="d-flex">
+                <div class="card-text-left title-opacity">Security Deposit:</div>
+                <div class="card-text-right">
+                  {{ singCurrencyFormat(consumerSelected?.contract?.depositAmount)}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-garden-bay d-none d-sm-block">
+            <!--<img style="position: absolute; bottom: 60px; right: 4px; width: 32%;" src="/assets/my-account/images/logo/ss-one-logo.png" alt="">-->
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-top-red">
+        <div class="card-body">
+          <h5><strong>Referral</strong></h5>
+          <div class="row">
+            <div class="col-8">
+              <div>
+                1. Get your friends to sign up with this referral code.
+                <br>
+                2. You and your friends will enjoy the referral benefit!
+              </div>
+            </div>
+            <div class="col-4 p-0 p-sm-auto">
+              <div class="referral-code">
+                <img src="./assets/my-account/images/logo/referral-logo.png" alt="">
+                <div class="amount">S$ {{ getDiscountAmount(consumerSelected?.discountAmount.fixed) }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-8">
+              <div class="form-group">
+                <label for="referralCode">Referral Code</label>
+                <div class="input-group">
+                  <input readonly type="text" class="form-control border-right-0" id="referralCode"
+                         name="referralCode"
+                         [ngModel]="consumerSelected?.referralCode" #referralCode>
+                  <div *ngIf="consumerSelected?.referralCode"
+                       class="input-group-prepend">
+                    <button class="form-control border-left-0"
+                            (mouseout)="endCopyReferrallCode()"
+                            (click)="copyReferralCode(referralCode)"
+                            id="referralCopyBtn"
+                            style="cursor: pointer" #copyBtn>
+                      <strong>{{copyText}}</strong>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4 p-0 p-sm-auto">
+              <div class="share-buttons d-flex justify-content-center pt-sm-4 mt-sm-1">
+                <a class="btn rounded-circle btn-social" style="background: rgb(38, 62, 80);" target="_top" href="mailto:?subject=Referral%20code&amp;body={{emailContent}}">
+                  <i class="far fa-envelope" style="color: white"></i>
+                </a>
+                <a class="btn rounded-circle btn-social" style="background: #3A5798;" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={{sharedUrl}}&quote={{sharedText}}">
+                  <i class="fab fa-facebook-f " style="color: white"></i>
+                </a>
+                <a class="btn rounded-circle btn-social" style="background: #4FA4E4;" target="_blank" href="http://twitter.com/share?text={{sharedText}}&url={{sharedUrl}}">
+                  <i class="fab fa-twitter " style="color: white"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-md-3">
+    <div class="card-deck mx-0 px-sm-0 col-sm-12">
+      <div class="card border-top-blue-dark">
+        <div class="card-body">
+          <h5><strong>Customer</strong></h5>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Full Name:</div>
+            <div class="card-text-right">{{ account?.customer?.name }}</div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">User ID:</div>
+            <div class="card-text-right">
+              <div class="input-group ig-height-30">
+                <input type="text" class="form-control customer-input p-0" id="userId"
+                       name="userId"
+                       [ngClass]="{'border-right-radius-0': !customerFieldMapInput['userId'], 'border-radius-25': customerFieldMapInput['userId']}"
+                       [readonly]="!customerFieldMapInput['userId']"
+                       [ngModel]="account.userId"
+                       (blur)="userIdBeforeChange ? (account.userId = userIdBeforeChange) : ''; userIdBeforeChange = '';
+                                errorMessageUserIdInvalid = ''; userId.value = account?.userId; customerFieldMapInput['userId'] = false;"
+                       (keyup)="validateUserIdInput($event, userId)"
+                       #userId>
+                <div class="input-group-prepend border-left-0">
+                  <button *ngIf="!customerFieldsUpdateRs['userId']"
+                          (mousedown)="customerFieldMapInput['userId'] = true; userId.focus(); $event.preventDefault()"
+                          class="input-group-text form-control" style="cursor: pointer; border: unset">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                </div>
+                <div *ngIf="customerFieldMapInput['userId']" class="save-options">
+                  <button (mousedown)="userId.value = account?.userId; customerFieldMapInput['userId'] = false; userId.blur();"
+                          class="action-button" style="cursor: pointer; color: #CE2A29">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  <button *ngIf="userId.value && userId.value !== account.userId" (mousedown)="updateUserID('userId', userId); $event.preventDefault()"
+                          class="action-button" style="cursor: pointer; color: #00D885">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="!userId.value || errorMessageUserIdInvalid" class="invalid-feedback">
+                <i>{{ errorMessageUserIdInvalid ? errorMessageUserIdInvalid : 'The User ID is required.' }}</i>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Identification Type:</div>
+            <div class="card-text-right">{{ account?.customer?.docType }}</div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">NRIC/FIN No:</div>
+            <div class="card-text-right">{{ account?.customer?.uen }}</div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Billing Address:</div>
+            <div class="card-text-right">{{ consumerSelected?.contract?.address }}</div>
+            <!--<div class="card-text-right p-0">-->
+              <!--<div class="input-group ig-height-30">-->
+                <!--<input type="text" class="form-control customer-input" id="identificationAddress"-->
+                       <!--name="identificationAddress"-->
+                       <!--[ngClass]="{'border-right-radius-0': !customerFieldMapInput['address'], 'border-radius-25': customerFieldMapInput['address']}"-->
+                       <!--[readonly]="!customerFieldMapInput['address']"-->
+                       <!--[ngModel]="account?.customer?.address"-->
+                       <!--(blur)="cancelUpdateCustomer('address', address)"-->
+                       <!--(keydown)="onCustomerAddressChanged($event, address)" #address>-->
+                <!--<div class="input-group-prepend border-left-0">-->
+                  <!--<button *ngIf="!customerFieldsUpdateRs['address'] && !customerFieldMapInput['address']"-->
+                          <!--(mousedown)="editCustomer('address', address); $event.preventDefault()"-->
+                          <!--class="input-group-text form-control" style="cursor: pointer; border: unset">-->
+                    <!--<i class="fas fa-pencil-alt"></i>-->
+                  <!--</button>-->
+                  <!--<button *ngIf="customerFieldsUpdateRs['address']"-->
+                          <!--class="input-group-text form-control" style="border: unset">-->
+                    <!--<i style="color: #28a745" title="update successfully" class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div *ngIf="customerFieldMapInput['address']" class="save-options">-->
+                  <!--<button (mousedown)="cancelUpdateCustomer('address', address); address.blur();"-->
+                          <!--class="action-button" style="cursor: pointer; color: #CE2A29">-->
+                    <!--<i class="fas fa-times"></i>-->
+                  <!--</button>-->
+                  <!--<button (mousedown)="validateAddress(address); $event.preventDefault()"-->
+                          <!--class="action-button" style="cursor: pointer; color: #00D885">-->
+                    <!--<i class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Billing Postal Code:</div>
+            <div class="card-text-right">{{ consumerSelected?.contract?.postal }}</div>
+            <!--<div class="card-text-right p-0">-->
+              <!--<div class="input-group ig-height-30">-->
+                <!--<input type="text" class="form-control customer-input" id="billingPostalCode"-->
+                       <!--name="billingPostalCode"-->
+                       <!--[ngClass]="{'border-right-radius-0': !customerFieldMapInput['postal'], 'border-radius-25': customerFieldMapInput['postal']}"-->
+                       <!--[readonly]="!customerFieldMapInput['postal']"-->
+                       <!--[ngModel]="account?.customer?.postal"-->
+                       <!--(blur)="cancelUpdateCustomer('postal', postal)"-->
+                       <!--(keydown)="onPostalCodeChanged($event, postal)" #postal>-->
+                <!--<div class="input-group-prepend border-left-0">-->
+                  <!--<button *ngIf="!customerFieldsUpdateRs['postal'] && !customerFieldMapInput['postal']"-->
+                          <!--(mousedown)="editCustomer('postal', postal); $event.preventDefault()"-->
+                          <!--class="input-group-text form-control" style="cursor: pointer; border: unset">-->
+                    <!--<i class="fas fa-pencil-alt"></i>-->
+                  <!--</button>-->
+                  <!--<button *ngIf="customerFieldsUpdateRs['postal']"-->
+                          <!--class="input-group-text form-control" style="border: unset">-->
+                    <!--<i style="color: #28a745" title="update successfully" class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div *ngIf="customerFieldMapInput['postal']" class="save-options">-->
+                  <!--<button (mousedown)="cancelUpdateCustomer('postal', postal); postal.blur();"-->
+                          <!--class="action-button" style="cursor: pointer; color: #CE2A29">-->
+                    <!--<i class="fas fa-times"></i>-->
+                  <!--</button>-->
+                  <!--<button (mousedown)="validatePostalCode(postal); $event.preventDefault()"-->
+                          <!--class="action-button" style="cursor: pointer; color: #00D885">-->
+                    <!--<i class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Email Address:</div>
+            <div class="card-text-right p-0">
+              <div class="input-group ig-height-30">
+                <input type="text" class="form-control customer-input" id="emailAddress" name="emailAddress"
+                       [ngClass]="{'border-right-radius-0': !customerFieldMapInput['emailAddress'], 'border-radius-25': customerFieldMapInput['emailAddress']}"
+                       [readonly]="!customerFieldMapInput['emailAddress']"
+                       [ngModel]="account?.customer?.emailAddress"
+                       (blur)="cancelUpdateCustomer('emailAddress', emailAddress)"
+                       (keydown)="onCustomerChanged($event, 'emailAddress', emailAddress)" #emailAddress>
+              </div>
+              <div *ngIf="emailAddress.value === ''" class="invalid-feedback">
+                <i style="padding-top: 8px" class="fas fa-exclamation" title="Email address is required"></i>
+              </div>
+              <div *ngIf="customerFieldsUpdateRs['emailAddress'] && !customerFieldMapInput['emailAddress']"
+                   class="valid-feedback">
+                <i style="padding-top: 8px" title="update successfully" class="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Mobile Number:</div>
+            <div class="card-text-right">{{ account?.customer?.mobileNo }}</div>
+            <!--<div class="card-text-right p-0">-->
+              <!--<div class="input-group ig-height-30">-->
+                <!--<re-captcha (resolved)="requestOTP($event, mobileNumber)" #mobileRC="reCaptcha"></re-captcha>-->
+                <!--<input type="text" class="form-control customer-input" id="mobileNumber" name="mobileNumber"-->
+                       <!--[ngClass]="{'border-right-radius-0': !customerFieldMapInput['mobileNo'], 'border-radius-25': customerFieldMapInput['mobileNo']}"-->
+                       <!--[readonly]="!customerFieldMapInput['mobileNo']"-->
+                       <!--[ngModel]="account?.customer?.mobileNo"-->
+                       <!--(blur)="cancelUpdateCustomer('mobileNo', mobileNumber)"-->
+                       <!--(keydown)="onCustomerMobileNoChanged($event, mobileNumber)" required #mobileNumber>-->
+                <!--<div class="input-group-prepend border-left-0">-->
+                  <!--<button *ngIf="!customerFieldsUpdateRs['mobileNo'] && !customerFieldMapInput['mobileNo']" (mousedown)="editCustomer('mobileNo', mobileNumber); $event.preventDefault()"-->
+                          <!--class="input-group-text form-control" style="cursor: pointer; border: unset">-->
+                    <!--<i class="fas fa-pencil-alt"></i>-->
+                  <!--</button>-->
+                  <!--<button *ngIf="customerFieldsUpdateRs['mobileNo']"-->
+                          <!--class="input-group-text form-control" style="border: unset">-->
+                    <!--<i style="color: #28a745" title="update successfully" class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div *ngIf="customerFieldMapInput['mobileNo']" class="save-options">-->
+                  <!--<button (mousedown)="cancelUpdateCustomer('mobileNo', mobileNumber)" class="action-button"-->
+                          <!--style="cursor: pointer; color: #CE2A29">-->
+                    <!--<i class="fas fa-times"></i>-->
+                  <!--</button>-->
+                  <!--<button (mousedown)="updateCustomerMobileNo(mobileNumber); $event.preventDefault()"-->
+                          <!--class="action-button" style="cursor: pointer; color: #00D885">-->
+                    <!--<i class="fas fa-check"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+                <!--<div *ngIf="!isValidMobileNo(mobileNumber.value)" class="invalid-feedback">-->
+                  <!--<i>Mobile number format is incorrect</i>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-top-blue-dark">
+        <div class="card-body">
+          <h5><strong>Service</strong></h5>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Service Address:</div>
+            <div class="card-text-right">{{ consumerSelected?.address }}</div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Postal Code:</div>
+            <div class="card-text-right">{{ consumerSelected?.postal }}</div>
+          </div>
+          <div class="d-flex">
+            <div class="card-text-left title-opacity">Dwelling Type:</div>
+            <div class="card-text-right">{{ consumerSelected?.contract?.dwellingType }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-md-3">
+    <div class="card-deck mx-0 px-sm-0 col-sm-6">
+      <div class="card border-top-blue-gray">
+        <div class="card-body">
+          <h5><strong>Payment Method</strong></h5>
+          <form *ngIf="!isDBSCard && cardList && (!isRecurringMethodSettedUp || cardList.length === 0)">
+            <span *ngIf="!consumerSelected?.contract?.paymentMode?.cardId && cardList.length > 0">
+              <a href="javascript:void(0)" (click)="isRecurringMethodSettedUp = true">
+                Apply for recurring payment method with existed card
+                <i class="fas fa-caret-right ml-2 mt-1"></i>
+              </a>
+              <p>Or</p>
+            </span>
+
+            <div class="row justify-content-center">
+              Apply for recurring payment method:
+            </div>
+            <div class="row justify-content-center">
+
+              <div class="col-4 pd-md-10 pd-sm-5" style="cursor: pointer">
+                <div id="visa" class="overlay cuz-payment" (click)="isLoadingRecurringMethod ? null : handleRecurringPayment()">
+                  <img class="img-md-60 img-sm-80" src="/assets/my-account/images/logo/card.png" alt="">
+                </div>
+                <div class="justify-content-center text-center text-blue-black" style="font-size: 60%">
+                  Credit/Debit Card
+                </div>
+              </div>
+
+              <div class="col-4 pd-md-10 pd-sm-5" style="-webkit-filter: grayscale(100%); filter: grayscale(100%);">
+                <div  id="giro" class="overlay cuz-payment" style="cursor: unset">
+                  <img class="img-md-60 img-sm-80" src="/assets/my-account/images/logo/giro-logo.png" alt="">
+                </div>
+                <div class="justify-content-center text-center text-blue-black" style="font-size: 60%">
+                  GIRO
+                </div>
+              </div>
+
+            </div>
+            <div *ngIf="!isRecurringMethodSettedUp && cardList?.length > 0 && consumerSelected?.contract?.paymentMode?.cardId"
+                 class="d-flex" style="font-size: 80%; padding-right: 10px; cursor: pointer"
+                 (click)="isRecurringMethodSettedUp = true">
+              <div class="d-flex text-blue-black">
+                <div class="arrow-left"></div>
+                <div style="padding-left: 3px">Back</div>
+              </div>
+            </div>
+          </form>
+
+          <form *ngIf="isDBSCard || (isRecurringMethodSettedUp && cardList && cardList?.length > 0)">
+            <div class="d-flex" style="font-size: 80%">
+              <div class="card-text-left">
+                Credit/Debit Card:
+              </div>
+            </div>
+            <div *ngFor="let card of cardList; let i = index" class="d-flex" style="font-size: 80%">
+              <div>
+                <span>
+                  <img *ngIf="card?.cardType === 'VISA'" class="img-md-50 img-sm-80" style="width: 80%;" src="/assets/my-account/images/logo/visa-sm.png" alt="">
+                  <img *ngIf="card?.cardType === 'MASTERCARD'" class="img-md-50 img-sm-80" style="width: 80%;" src="/assets/my-account/images/logo/mastercard-sm.png" alt="">
+                </span>
+              </div>
+              <div style="padding-left: 10px; padding-top: 2px">
+                <p [ngClass]="{ 'font-weight-bold': card.isAutoDeduct, 'title-opacity':  !card.isAutoDeduct}">{{card.displayNo}}</p>
+              </div>
+
+              <div class="ml-auto">
+                <div class="toggle-wrapper">
+                  <input type="checkbox" name="on-off-switch- + {{ i }}" id="on-off-switch- + {{ i }}"
+                         [(ngModel)]="card.isAutoDeduct" [disabled]="isLoadingRecurringMethod || isDBSCard"
+                         (change)="onChangeToggleRecurring(card)" tabindex="1">
+                  <label for="on-off-switch- + {{ i }}" class="toggle">
+                    <span class="toggle-handler"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex" style="font-size: 80%; float: right; padding-right: 10px; cursor: pointer" (click)="isRecurringMethodSettedUp = false">
+              <div class="row text-blue-black">
+                Change mode of payment
+                <div class="arrow-right"></div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div *ngIf="false" class="card border-top-blue-gray">
+        <div class="card-body">
+          <h5>
+            <strong>Notifications</strong>
+          </h5>
+          <table id="data-table" width="100%">
+            <thead>
+            <tr>
+              <th></th>
+              <th>Email</th>
+              <th>SMS</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+              <td>Notify me when new bill is issued</td>
+              <td>
+                <input type="checkbox" name="newBillEmailNotification"
+                       [ngModel]="account.newBillEmailNotification"
+                       (ngModelChange)="updateAccountByCheckbox('newBillEmailNotification', $event)"/>
+              </td>
+              <td><input type="checkbox" name="newBillSMSNotification"
+                         (ngModelChange)="updateAccountByCheckbox('newBillSMSNotification', $event)"
+                         [ngModel]="account.newBillSMSNotification"/></td>
+            </tr>
+            <tr class="">
+              <td>Notify me when bill is due</td>
+              <td><input type="checkbox" name="dueBillEmailNotification"
+                         (ngModelChange)="updateAccountByCheckbox('dueBillEmailNotification', $event)"
+                         [ngModel]="account.dueBillEmailNotification"/></td>
+              <td><input type="checkbox" name="dueBillSMSNotification"
+                         (ngModelChange)="updateAccountByCheckbox('dueBillSMSNotification', $event)"
+                         [ngModel]="account.dueBillSMSNotification"/></td>
+            </tr>
+            <tr class="">
+              <td>I want to receive new promotions</td>
+              <td><input type="checkbox" name="promotionEmailNotification"
+                         (ngModelChange)="updateAccountByCheckbox('promotionEmailNotification', $event)"
+                         [ngModel]="account.promotionEmailNotification"/></td>
+              <td><input type="checkbox" name="promotionSMSNotification"
+                         (ngModelChange)="updateAccountByCheckbox('promotionSMSNotification', $event)"
+                         [ngModel]="account.promotionSMSNotification"/></td>
+            </tr>
+            <tr class="">
+              <td>I want to receive the newsletters</td>
+              <td><input type="checkbox" name="newsletterNotification"
+                         (ngModelChange)="updateAccountByCheckbox('newsletterNotification', $event)"
+                         [ngModel]="account.newsletterNotification"/></td>
+              <td></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--// TODO: Present is not allow edit / update, so, not use validate OTP-->
+  <!--<ng-template #validateOTP>-->
+    <!--<div class="modal-content">-->
+
+      <!--&lt;!&ndash; Modal Header &ndash;&gt;-->
+      <!--<div class="modal-header border-bottom-0 pb-0">-->
+        <!--<h4 class="modal-title">&nbsp;</h4>-->
+        <!--<button type="button" class="close" (click)="modal.hide(); mobileVerification.otp = ''">&times;</button>-->
+      <!--</div>-->
+
+      <!--&lt;!&ndash; Modal body &ndash;&gt;-->
+      <!--<div class="modal-body d-flex flex-column pt-0 pl-5 ml-0 ml-lg-5 pr-5 mr-0 mr-lg-5">-->
+        <!--<div class="text-center"><h5>Validate OTP (One Time Password)</h5></div>-->
+
+        <!--<div class="pt-5 pb-4 text-center">-->
+          <!--<ng-container *ngIf="verificationProgress === 'pending'">-->
+            <!--<p>A One Time Passcode has been sent to <strong>{{ mobileNumber?.value }}</strong></p>-->
+            <!--<p>Please enter the OTP below to verify your Mobile Phone.</p>-->
+          <!--</ng-container>-->
+          <!--<ng-container *ngIf="verificationProgress === 'doing'">-->
+            <!--<p class="text-warning"><strong>Please enter the OTP below to verify your Mobile Phone.</strong></p>-->
+          <!--</ng-container>-->
+          <!--<ng-container *ngIf="verificationProgress === 'success'">-->
+            <!--<p class="text-success"><strong>Mobile verification success!</strong></p>-->
+          <!--</ng-container>-->
+          <!--<ng-container *ngIf="verificationProgress === 'fail'">-->
+            <!--<p class="text-danger"><strong>Mobile verification failed</strong></p>-->
+          <!--</ng-container>-->
+          <!--<p class="text-warning">{{ warningMessage }}</p>-->
+        <!--</div>-->
+
+        <!--<input name="optToVerify" class="form-control" [(ngModel)]="mobileVerification.otp"/>-->
+
+        <!--<div class="pt-4 d-flex justify-content-center">-->
+          <!--<button type="button" class="btn btn-submit" (click)="verifyOTP(mobileNumber)">-->
+            <!--<span>Validate OTP</span>-->
+          <!--</button>-->
+        <!--</div>-->
+
+        <!--<div class="pt-1 d-flex justify-content-center">-->
+          <!--<button type="button" class="btn btn-light btn-resend-otp"-->
+                  <!--(click)="modal.hide(); resendOTP()">-->
+            <!--<span>Resend OTP</span>-->
+          <!--</button>-->
+        <!--</div>-->
+
+      <!--</div>-->
+
+    <!--</div>-->
+  <!--</ng-template>-->
+
+  <ng-template #errorModal>
+    <div class="modal-header">
+      <h4 class="modal-title pull-left">Errors</h4>
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body" [innerHTML]="errorModalMessage"></div>
+  </ng-template>
+
+  <ng-template #warningModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">{{warningHeader}} Verification</h5>
+        <p [innerHTML]="warningMessage"></p>
+        <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="modal.hide();">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #alertModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="closeAlertModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">Transaction Verification</h5>
+        <p>This transaction was successful and your payment is being processed.</p>
+        <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="closeAlertModal()">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #timeoutModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <h5 class="font-weight-bold">Transaction Timeout</h5>
+        <p>This transaction was unsuccessful due to timeout, please try again.</p>
+        <button class="btn btn-red btn-login text-white cuz-validate-btn" (click)="modal.hide();">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #paymentModal>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <p>You will be redirected to payment gateway. Please do not refresh.</p>
+        <p>A S$1 transaction will be created to set-up the recurring payment. Upon successful activation, this transaction will be cancelled. Nothing will be debited from your credit/debit card.</p>
+        <p>{{paymentTimeout}}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #notificationChangeCardMethodModal>
+    <div class="modal-header border-bottom-0 pb-0">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aira-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+      <div class="mr-sm-4 ml-sm-4 text-center">
+        <ng-container *ngIf="isUpdateRecurringSuccess">
+          <h5 class="font-weight-bold">Transaction successfully</h5>
+          <p>Your card have been updated successfully.</p>
+        </ng-container>
+
+        <ng-container *ngIf="!isUpdateRecurringSuccess">
+          <h5 class="font-weight-bold">Transaction failed</h5>
+          <p>Can not setup recurring with this card.</p>
+        </ng-container>
+
+        <button class="btn btn-danger cuz-validate-btn" (click)="modal.hide()">OK</button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #warningRecurringServiceModal>
+    <div class="pt-3 pr-4 pl-4">
+      <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body text-center pl-5 pr-5 pb-5">
+      <i class="fas fa-exclamation-triangle fa-4x text-warning"></i>
+      <p class="pt-4" [innerHTML]="errorModalMessage"></p>
+
+      <div class="text-center">
+        <button type="button" class="btn btn-primary text-white" (click)="modal.hide();">
+          Yes
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,14 @@
+.form-control[readonly] {
+  background-color: unset;
+}
+
+*:focus {
+  box-shadow: unset !important;
+  border: 1px solid #ced4da;
+}
+//
+//i.fab, i.far {
+//  position: absolute;
+//  top: 8px;
+//  left: 9px;
+//}

@@ -1,0 +1,153 @@
+<form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+  <div class="content-document-upload">
+    <div id="content-upload" class="form-content">
+
+      <div class="document-upload-container">
+        <ng-container *ngIf="parent.isSPAccountHolder">
+          <div class="form-row">
+            <div class="form-group col-lg-6 m-0 mb-lg-auto">
+              <label class="form-control-label">Identification document</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationFront]"
+                                         [name]="DocumentName.IdentificationFront"
+                                         [documentName]="DocumentName.IdentificationFront"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Front"
+                                         [required]="parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+
+            <div class="form-group col-lg-6">
+              <label class="form-control-label d-none d-lg-block">&nbsp;</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationBack]"
+                                         [name]="DocumentName.IdentificationBack"
+                                         [documentName]="DocumentName.IdentificationBack"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Back"
+                                         [required]="parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-lg-6 mb-0 mb-lg-auto">
+              <label class="form-control-label">SP past month bill</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.SpPastMonthBill]"
+                                         [name]="DocumentName.SpPastMonthBill"
+                                         [documentName]="DocumentName.SpPastMonthBill"
+                                         [isSubmitted]="form.submitted"
+                                         [required]="parent.isSPAccountHolder && !documents[DocumentName.NewSpAccountOpeningLetter]?.uploadedId"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+            <div class="form-control-label d-block d-lg-none pl-3">or</div>
+            <div class="form-group col-lg-6">
+              <div class="connection-div d-none d-lg-block">or</div>
+              <label class="form-control-label">New SP account opening letter</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.NewSpAccountOpeningLetter]"
+                                         [name]="DocumentName.NewSpAccountOpeningLetter"
+                                         [documentName]="DocumentName.NewSpAccountOpeningLetter"
+                                         [isSubmitted]="form.submitted"
+                                         [required]="!documents[DocumentName.SpPastMonthBill]?.uploadedId"
+                                         placeHolder="(Optional)"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!parent.isSPAccountHolder">
+          <div class="form-row">
+            <div class="form-group col-lg-6 mb-0 mb-lg-auto">
+              <label class="form-control-label">Letter of Authorisation by SP account holder</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.LetterOfAuthorisation]"
+                                         [name]="DocumentName.LetterOfAuthorisation"
+                                         [documentName]="DocumentName.LetterOfAuthorisation"
+                                         [isSubmitted]="form.submitted"
+                                         [required]="!parent.isSPAccountHolder && !documents[DocumentName.ProofOfResidency]?.uploadedId"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+            <div class="form-group col-lg-6">
+              <label class="form-control-label d-none d-lg-block">&nbsp;</label>
+              <span class="text-secondary mr-2 font-italic">
+                Please make sure that the SP account holder has given you the authorisation via this form.
+              </span>
+              <a href="/assets/sign-up/download/Authorisation_Letter.pdf" includeVersion class="btn btn-up-down-load" download>
+                <span>DOWNLOAD Form</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-lg-6 mb-0 mb-lg-auto">
+              <label class="form-control-label">Identification document – SP account holder</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationSpAccountHolderFront]"
+                                         [name]="DocumentName.IdentificationSpAccountHolderFront"
+                                         [documentName]="DocumentName.IdentificationSpAccountHolderFront"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Front"
+                                         [required]="!parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+
+            <div class="form-group col-lg-6">
+              <label class="form-control-label d-none d-lg-block">&nbsp;</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationSpAccountHolderBack]"
+                                         [name]="DocumentName.IdentificationSpAccountHolderBack"
+                                         [documentName]="DocumentName.IdentificationSpAccountHolderBack"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Back"
+                                         [required]="!parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-lg-6 mb-0 mb-lg-auto">
+              <label class="form-control-label">Identification document – Applicant</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationApplicantFront]"
+                                         [name]="DocumentName.IdentificationApplicantFront"
+                                         [documentName]="DocumentName.IdentificationApplicantFront"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Front"
+                                         [required]="!parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+
+            <div class="form-group col-lg-6">
+              <label class="form-control-label d-none d-lg-block">&nbsp;</label>
+              <app-document-upload-input [ngModel]="documents[DocumentName.IdentificationApplicantBack]"
+                                         [name]="DocumentName.IdentificationApplicantBack"
+                                         [documentName]="DocumentName.IdentificationApplicantBack"
+                                         [isSubmitted]="form.submitted"
+                                         placeHolder="Back"
+                                         [required]="!parent.isSPAccountHolder"
+                                         (selectFile)="selectFile($event)"
+                                         (cancel)="cancelUpload($event)">
+              </app-document-upload-input>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="d-flex justify-content-center pt-4 pb-4">
+        <button class="btn step-next">
+          <span>Next</span> <img src="/assets/sign-up/images/content/next.png" includeVersion>
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

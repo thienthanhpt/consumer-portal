@@ -1,0 +1,325 @@
+<form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+  <div class="form-content form-row content-plan-detail">
+    <div class="form-group col-12">
+      <label class="form-control-label" for="productName">Plan details</label>
+      <select name="productName" id="productName" class="form-control"
+              [class.is-invalid]="productName.invalid && (productName.touched || form.submitted)"
+              required
+              [ngModel]="parent.model.premise.productName" (change)="onSelectPricingPlanChange($event.target.value)" #productName="ngModel">
+        <option [value]="null" disabled>Select your plan</option>
+        <option *ngFor="let item of pricingPlanList" [value]="item.name">
+          {{ item.displayName }}
+        </option>
+      </select>
+
+      <div *ngIf="productName.invalid && (productName.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="productName?.errors.required">
+          <i>Plan details is required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-md-6">
+      <label class="form-control-label" for="serviceNo">SP Account No.</label>
+      <input name="serviceNo" id="serviceNo" class="form-control" placeholder="10 Digits"
+             [class.is-invalid]="serviceNo.invalid && (serviceNo.touched || form.submitted)"
+             required [pattern]="config.validationRegex.spAccountNo"
+             [(ngModel)]="parent.model.premise.serviceNo" #serviceNo="ngModel">
+
+        <ng-template #serviceNoTooltip>
+          <img src='/assets/sign-up/images/content/SP_Account.jpg' alt="SP Account" includeVersion/>
+        </ng-template>
+        <span class="input-icon" [tooltip]="serviceNoTooltip" placement="bottom" triggers=""
+              (mouseenter)="delayedPopover(pop)"
+              (mouseleave)="stopPopover(pop)"
+              (click)="pop.isOpen ? pop.hide() : pop.show()"
+              containerClass="tooltip-sp-account-no" #pop="bs-tooltip">
+          <i class="far fa-question-circle"></i>
+        </span>
+
+      <div *ngIf="serviceNo.invalid && (serviceNo.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="serviceNo?.errors.required">
+          <i>Your SP Account No. is required</i>
+        </div>
+        <div *ngIf="!serviceNo?.errors.required && serviceNo?.errors.pattern">
+          <i>Your SP Account No. is invalid</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-sm-6">
+      <label class="form-control-label" for="referralCode">Enter your promotion/referral code if you have one:</label>
+      <input name="referralCode" id="referralCode" class="form-control"
+             (focus)="onPromotionCodeFocus()"
+             (blur)="onPromotionCodeBlur()"
+             (change)="isPromotionCodeVerifyFail = false"
+             [class.is-valid]="parent.model.referralCode && isPromotionCodeValid()"
+             [class.is-invalid]="!isPromotionCodeValid() && form.submitted"
+             [(ngModel)]="parent.model.referralCode" #referralCode="ngModel"/>
+      <button type="button" data-toggle="modal" data-target="#validateOTP" class="btn input-button"
+              [disabled]="!parent.model.referralCode || isPromotionCodeValid() || isPromotionCodeVerifyFail"
+              (click)="verifyPromotionCode()">
+        <span>Verify</span>
+      </button>
+
+      <div class="valid-feedback">
+        <i>Your promotional code is verified.</i>
+      </div>
+      <div *ngIf="!isPromotionCodeValid() && !isPromotionCodeVerifyFail && form.submitted" class="invalid-feedback">
+        <i>Promotion/referral code is not verified</i>
+      </div>
+      <div *ngIf="isPromotionCodeVerifyFail" class="fail-feedback">
+        <i>{{promotionMessage.length > 0 ? 'Sorry! Promo code fully redeemed' : 'Sorry this promotion/referral code is invalid'}}</i>
+      </div>
+    </div>
+
+    <div class="form-group col-12">
+      <label class="form-control-label" for="referralCode">Enter your situation</label>
+      <div class="custom-radio">
+        <label clearfix>
+          <input class="custom-radio" type="radio" name="typeUpload" [(ngModel)]="parent.isSPAccountHolder" [value]="true">
+          <span class="custom-span">I am the SP Account Holder</span>
+        </label>
+      </div>
+      <div class="custom-radio">
+        <label clearfix>
+          <input type="radio" name="typeUpload" [(ngModel)]="parent.isSPAccountHolder" [value]="false">
+          <span>I am applying on behalf of the SP Account Holder</span>
+          <ng-container *ngIf="!parent.isSPAccountHolder">
+            <span class="text-secondary mr-2 font-italic">
+                  Please make sure that the SP account holder has given you the authorisation via this form.
+              <a href="/assets/sign-up/download/Authorisation_Letter.pdf" includeVersion class="btn btn-up-down-load mr-2" download>
+                <span>DOWNLOAD Form</span>
+              </a>
+            </span>
+          </ng-container>
+        </label>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn step-next mx-auto">
+        <span>Next</span> <img src="/assets/sign-up/images/content/next.png" includeVersion>
+      </button>
+    </div>
+    </div>
+</form>
+
+<div class="overlay-bottom" id="postalCodeOverlay" #postalCodeOverlay>
+  <div class="share-buttons d-flex justify-content-center pt-sm-4 mt-sm-1">
+    <a id="postalCodeOverlayChild1" class="btn rounded-circle btn-social" style="background: #3AC76A;" target="_top">
+      <i id="postalCodeOverlayChild2" class="fas fa-question text-white"></i>
+    </a>
+  </div>
+</div>
+
+<div *ngIf="postalCodeOverlayShowUp.firstOverlay" class="postal-code-overlay overlay-bottom" style="right: 63px;">
+  <div class="white-shape">
+    Not sure if you are eligible?
+  </div>
+</div>
+
+<div *ngIf="postalCodeOverlayShowUp.secondOverlay" id="postalCodeVerification" class="postal-code-overlay d-flex overlay-bottom" style="right: 63px;">
+  <div class="green-shape">
+    Verify your eligibility with your postal code:
+    <input id="postalCode" popover="Postal code must contains 6 digits" containerClass="cuz-popover-container"
+           autofocus maxlength="6" name="postalCode" class="cuz-input" [(ngModel)]="potentialCustomer.postalCode" (click)="popover.hide()"
+           (keydown)="popover.hide(); onPostalCodeChanged($event);" triggers="" #popover="bs-popover">
+  </div>
+</div>
+
+<div *ngIf="postalCodeOverlayShowUp.successOverlay" class="postal-code-overlay d-flex overlay-bottom" style="right: 63px;">
+  <div class="green-shape">
+    Great! You're eligible. You can now sign-up and save monthly on your electricity bill with Sunseap!
+  </div>
+</div>
+
+<div *ngIf="postalCodeOverlayShowUp.failedOverlay" id="submissionForm" class="postal-code-overlay overlay-bottom" style="right: 63px;">
+  <div class="green-shape">
+    <div class="row p-rl-20">OEM is coming soon to you!</div>
+    <div class="row p-rl-20">
+      Meanwhile you can leave us your contact and we'll keep you posted.
+    </div>
+    <form #form="ngForm" (ngSubmit)="registContact()" novalidate>
+      <div class="row p-rl-20">
+        <input name="name" [(ngModel)]="potentialCustomer.name" placeholder="Your name"
+               [ngClass]="{'danger-border': !potentialCustomer.name && name.touched}"
+               style="margin-right: 5px; margin-bottom: 5px" #name="ngModel">
+        <input type="email" name="email" [(ngModel)]="potentialCustomer.email"
+               placeholder="Your email address" [ngClass]="{'danger-border': !isValidEmailAddress() && email.touched}"
+               style="margin-right: 5px; margin-bottom: 5px" #email="ngModel">
+        <input name="mobile" [(ngModel)]="potentialCustomer.mobile" placeholder="Your mobile no."
+               [ngClass]="{'danger-border': !isValidMobileNo() && mobile.touched}" #mobile="ngModel">
+      </div>
+      <div class="row d-flex p-rl-20" style="font-size: 15px">
+        <label class="checkbox-container">I consent that Sunseap can contact me via the details provided above.
+          <input id="consent-input" type="checkbox" name="consent" [(ngModel)]="potentialCustomer.consent">
+          <span class="cuz-checkmark"></span>
+        </label>
+      </div>
+      <div class="row justify-content-center pb-2 p-rl-20">
+        <button type="submit" [disabled]="!potentialCustomer.name || !isValidEmailAddress() || !isValidMobileNo() || !potentialCustomer.consent"
+                class="btn btn-danger pt-0 pb-0">
+          <span>Submit</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="postalCodeOverlayShowUp.submitSuccessOverlay" id="submissionSuccess" class="postal-code-overlay d-flex overlay-bottom" style="right: 63px;">
+  <div class="green-shape">
+    Thank you for showing your interest in being powered by solar. We’ll contact you soon.
+  </div>
+</div>
+
+<ng-template #advisory>
+  <div class="modal-content">
+
+    <!-- Modal body -->
+    <div class="modal-body d-flex flex-column pt-0">
+      <div class="row d-none d-sm-block">
+        <div class="container">
+          <div class="col-md-12">
+            <img src="/assets/sign-up/images/content/advisory_required.png" includeVersion alt="advisory" class="img-fluid">
+          </div>
+        </div>
+      </div>
+      <div class="d-block d-sm-none d-flex justify-content-between pt-5 img-modal">
+        <img class="modal-1" src="/assets/sign-up/images/content/modal_1.png" includeVersion>
+        <img class="modal-2" src="/assets/sign-up/images/content/modal_2.png" includeVersion>
+      </div>
+      <div class="col-1"></div>
+      <div class="d-block d-sm-none row d-flex text-center p-4">
+        <div class="row mb-3"><h4>Consumer Advisory for Open Electricity Market</h4></div>
+        <div class="row">
+          <div class="col-2">
+            <span class="c-no">1</span>
+          </div>
+          <div class="col-9 p-0 text-justify">
+            <p><b>Buying electricity from a retailer does not affect your electricity supply.</b> This is because SP Group will continue to operate the national power grid and deliver electricity to you.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <span class="c-no">2</span>
+          </div>
+          <div class="col-9 p-0 text-justify">
+            <p><b>You can continue to buy electricity from SP Group at the regulated tariff.</b> It is not compulsory for you to buy electricity from a retailer, and there is no deadline for you to switch to a retailer. You should take your time to understand your options before making a decision.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <span class="c-no">3</span>
+          </div>
+          <div class="col-9 p-0 text-justify">
+            <div class="row m-0">
+              <p>There are two types of standard price plans:</p>
+            </div>
+            <div>
+              <div class="d-flex justify-content-center">
+                <img class="size-img" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-FixedPrice.png" includeVersion alt="">
+              </div>
+              <div class="text-justify">
+                <p>Fixed Price Plans are more suitable for consumers who prefer a constant electricity
+                  rate throughout the contract duration. However, the electricity rate may be higher
+                  or lower than the regulated tariff during the contract duration, as the regulated
+                  tariff is reviewed every quarter.</p>
+              </div>
+              <div class="d-flex justify-content-center">
+                <img class="size-img" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-DOT.png" includeVersion alt="">
+              </div>
+              <div class="text-justify">
+                <p>Discount Off the Regulated Tariff Plans provide a fixed discount off the regulated
+                  tariff, but the electricity rates will change in tandem with the regulated tariff. These
+                  plans are more suitable for consumers who do not mind changes in electricity rates
+                  every quarter so long as it is lower than the regulated tariff.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <span class="c-no">4</span>
+          </div>
+          <div class="col-9 p-0 text-justify">
+            <div>
+              <p><b>Before you sign up with a retailer:</b></p>
+            </div>
+            <div class="col-12 p-0">
+              <div class="d-flex justify-content-center">
+                <img class="size-img" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-Factsheet.png" includeVersion alt="">
+              </div>
+              <div class="text-justify">
+                <p>• Ask for a Fact Sheet which summarises the
+                  key contractual terms of your preferred
+                  price plan (e.g. contract price, contract
+                  duration, security deposit, early termination
+                  charges and auto-renewal clauses).</p>
+              </div>
+            </div>
+            <div class="col-12 p-0">
+              <div class="d-flex justify-content-center">
+                <img class="size-img" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-Contract.png" includeVersion alt="">
+              </div>
+              <div class="text-justify">
+                <p>• Read through the contract, and ask the
+                  retailer to explain the terms and conditions
+                  if you do not understand them.
+                </p>
+                <p>
+                  • Keep a copy of the contract for your
+                  reference.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <span class="c-no">5</span>
+          </div>
+          <div class="col-9 p-0 text-justify">
+            <div>For any dispute with your contracted retailer, you can approach the Consumers Association of Singapore (CASE) for assistance.</div>
+          </div>
+        </div>
+        <div class="col-12 mt-4 d-flex justify-content-center">
+          <span>
+            <img class="c-img-icon" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-Website.png" includeVersion alt="">
+            <a href="www.case.org.sg"><b>www.case.org.sg</b></a>
+          </span>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+          <span>
+            <img class="c-img-icon" src="/assets/sign-up/images/content/advisory/ConsumerAdvisory_Icons-Phone.png" includeVersion alt="">
+            <a href="tel:6100 0315"><b>6100 0315</b></a> (Operating hours: Mon to Fri, 9am to 5pm)
+          </span>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <br/><br/>
+            Visit <a href="www.openelectricitymarket.sg"><b>www.openelectricitymarket.sg</b></a> or call
+            <a href="tel:18002338000"><b>1800-233-8000</b></a> for more information
+            <br/><br/><br/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row d-flex justify-content-center pr-4 pl-4">
+        <div>
+          <label class="control control--checkbox">I hereby acknowledge that I have read and understood the above advisory.
+            <input class="control__indicator" type="checkbox" [checked]="parent.isAdvisoryAgreed" (change)="parent.isAdvisoryAgreed = !parent.isAdvisoryAgreed"/>
+            <div class="control__indicator"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center pt-4 pb-4">
+        <button (click)="closeAdvisoryModal()" class="btn step-next" [ngStyle]="{'pointer-events': parent.isAdvisoryAgreed ? 'auto' : 'none'}">
+          <span>Next</span> <img src="/assets/sign-up/images/content/next.png" includeVersion>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+

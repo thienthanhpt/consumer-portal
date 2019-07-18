@@ -1,0 +1,173 @@
+<form #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+  <div class="form-content form-row">
+    <div class="form-group col-12">
+      <label class="form-control-label" for="identificationName">Full name (as per ID)</label>
+      <input name="identificationName" id="identificationName" class="form-control"
+             [class.is-invalid]="identificationName.invalid && (identificationName.touched || form.submitted)"
+             required
+             [(ngModel)]="parent.model.identificationName" #identificationName="ngModel"/>
+
+      <div *ngIf="identificationName.invalid && (identificationName.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="identificationName?.errors.required">
+          <i>Full name is required</i>
+        </div>
+      </div>
+    </div>
+
+      <div class="form-group col-lg-6">
+        <label class="form-control-label" for="identificationType">Identification type</label>
+        <select name="identificationType" id="identificationType" class="form-control"
+                [class.is-invalid]="identificationType.invalid && (identificationType.touched || form.submitted)"
+                required
+                [(ngModel)]="parent.model.identificationType" #identificationType="ngModel">
+          <option [value]="null" disabled>Select your identification type</option>
+          <option *ngFor="let option of IDENTIFICATION_TYPE_OPTIONS | toArray" [value]="option.key">{{ option.value }}</option>
+        </select>
+
+        <div *ngIf="identificationType.invalid && (identificationType.touched || form.submitted)" class="invalid-feedback">
+          <div *ngIf="identificationType?.errors.required">
+            <i>Identification type is required</i>
+          </div>
+        </div>
+      </div>
+
+    <div class="form-group col-lg-6">
+      <label class="form-control-label" for="identificationNo">NRIC No. / FIN</label>
+      <input name="identificationNo" id="identificationNo" class="form-control"
+             [class.is-invalid]="identificationNo.invalid && (identificationNo.touched || form.submitted)"
+             required [pattern]="config.validationRegex.nricNo"
+             [(ngModel)]="parent.model.identificationNo" #identificationNo="ngModel"/>
+
+      <div *ngIf="identificationNo.invalid && (identificationNo.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="identificationNo?.errors.required">
+          <i>NRIC No. / FIN is required</i>
+        </div>
+        <div *ngIf="!identificationNo?.errors.required && identificationNo?.errors.pattern">
+          <i>NRIC No. / FIN is invalid</i>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="[IdentificationType.EmploymentPass, IdentificationType.WorkPermit] | includes: parent.model.identificationType" class="form-group col-lg-6">
+      <label class="form-control-label" for="identificationExpiryDate">Expiry date</label>
+      <input name="identificationExpiryDate" id="identificationExpiryDate" class="form-control" [placeholder]="config.bootstrap.datePicker.dateInputFormat"
+             [class.is-invalid]="identificationExpiryDate.invalid && (identificationExpiryDate.touched || form.submitted)"
+             [required]="[IdentificationType.EmploymentPass, IdentificationType.WorkPermit] | includes: parent.model.identificationType" readonly
+             bsDatepicker [bsConfig]="config.bootstrap.datePicker" [minDate]="minExpiryDate" #identificationExpiryDateDp="bsDatepicker"
+             [ngModel]="parent.model.identificationExpiryDate" (bsValueChange)="onExpiryDateChange($event)" #identificationExpiryDate="ngModel">
+      <span class="input-icon" (click)="identificationExpiryDateDp.toggle()"><i class="far fa-calendar"></i></span>
+
+      <div *ngIf="identificationExpiryDate.invalid && (identificationExpiryDate.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="identificationExpiryDate?.errors.required">
+          <i>Expiry date is required</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-lg-6">
+      <label class="form-control-label" for="email">Email address</label>
+      <input name="email" id="email" class="form-control"
+             [class.is-invalid]="email.invalid && (email.touched || form.submitted)"
+             required email
+             [(ngModel)]="parent.model.email" #email="ngModel"/>
+
+      <div *ngIf="email.invalid && (email.touched || form.submitted)" class="invalid-feedback">
+        <div *ngIf="email?.errors.required">
+          <i>Email address is required</i>
+        </div>
+        <div *ngIf="!email?.errors.required && email?.errors.email">
+          <i>Email address is invalid</i>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group col-lg-6">
+      <label class="form-control-label" for="confirmEmail">Confirm email address</label>
+      <input name="confirmEmail" id="confirmEmail" class="form-control" blockCopyPaste
+             [class.is-invalid]="!isEmailConfirmed() && (confirmEmail.touched || form.submitted)"
+             [(ngModel)]="confirmEmailValue" #confirmEmail="ngModel"/>
+
+      <div *ngIf="!isEmailConfirmed() && (confirmEmail.touched || form.submitted)" class="invalid-feedback">
+        <i>Your confirm email does not match</i>
+      </div>
+    </div>
+
+    <div class="form-group col-lg-6">
+      <re-captcha (resolved)="requestOTP($event)" #mobileRC="reCaptcha"></re-captcha>
+      <label class="form-control-label" for="mobileNo">Mobile number</label>
+      <input name="mobileNo" id="mobileNo" class="form-control"
+             [class.is-valid]="isMobileNoVerified()"
+             [class.is-invalid]="!isMobileNoVerified() && (mobileNo.touched || form.submitted)"
+             [pattern]="config.validationRegex.mobileNo"
+             [(ngModel)]="parent.model.mobileNo" #mobileNo="ngModel"/>
+      <button type="button" class="btn input-button"
+              [disabled]="isMobileNoVerified() || !parent.model.mobileNo || mobileNo.invalid"
+              (click)="mobileRC.execute()"><span>SUBMIT</span></button>
+
+      <div *ngIf="isMobileNoVerified()" class="valid-feedback"><i>Mobile number is verified</i></div>
+
+      <i *ngIf="!isMobileNoVerified()" class="text-secondary"><small>Mobile number needs to be verified.</small></i>
+
+      <div *ngIf="!isMobileNoVerified() && (mobileNo.touched || form.submitted)" class="invalid-feedback">
+        <i>Mobile number is not verified</i>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn step-next mx-auto">
+        <span>Next</span> <img src="/assets/sign-up/images/content/next.png" includeVersion>
+      </button>
+    </div>
+
+  </div>
+
+  <ng-template #validateOTP>
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header border-bottom-0 pb-0">
+        <h4 class="modal-title">&nbsp;</h4>
+        <button type="button" class="close" (click)="modal.hide(); mobileVerification.otp = ''">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body d-flex flex-column pt-0 pl-5 ml-0 ml-lg-5 pr-5 mr-0 mr-lg-5">
+        <div class="text-center"><h5>Validate OTP (One Time Password)</h5></div>
+
+        <div class="pt-5 pb-4 text-center">
+          <ng-container *ngIf="verificationProgress === 'pending'">
+            <p>A One Time Passcode has been sent to <strong>{{ parent.model.mobileNo }}</strong></p>
+            <p>Please enter the OTP below to verify your Mobile Phone.</p>
+          </ng-container>
+          <ng-container *ngIf="verificationProgress === 'doing'">
+            <p class="text-warning"><strong>Please enter the OTP below to verify your Mobile Phone.</strong></p>
+          </ng-container>
+          <ng-container *ngIf="verificationProgress === 'success'">
+            <p class="text-success"><strong>Mobile verification success!</strong></p>
+          </ng-container>
+          <ng-container *ngIf="verificationProgress === 'fail'">
+            <p class="text-danger"><strong>{{ errorMessage }}</strong></p>
+          </ng-container>
+          <p class="text-danger">{{ warningMessage }}</p>
+        </div>
+
+        <input name="optToVerify" class="form-control" [(ngModel)]="mobileVerification.otp" [disabled]="isOTPExpired()"/>
+
+        <div class="pt-4 d-flex justify-content-center">
+          <button type="button" class="btn btn-submit" (click)="verifyOTP()" [disabled]="isOTPExpired()">
+            <span>Validate OTP</span>
+          </button>
+        </div>
+
+        <div class="pt-1 d-flex justify-content-center">
+          <button type="button" class="btn btn-light btn-resend-otp"
+                  (click)="modal.hide(); resendOTP()" [disabled]="isOTPExpired()">
+            <span>Resend OTP</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </ng-template>
+</form>

@@ -1,0 +1,23 @@
+<div class="row mb-3">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="border-0 card-header text-red font-weight-bold">
+        <span class="text-dark">My Payments</span>
+      </div>
+      <div class="card-body">
+        <app-my-payments [items]="listTransaction"
+                         (onSortData)="onSortTransactions($event)"
+                         (onPageChanged)="reloadTransactionHistory($event)">
+        </app-my-payments>
+        <mat-paginator showFirstLastButtons
+                       class="pr-lg-5"
+                       *ngIf="totalCount > transactionPagination.limit"
+                       [pageIndex]="currentPage"
+                       [length]="totalCount"
+                       [pageSize]="transactionPagination.limit"
+                       (page)="nextPage($event)">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>

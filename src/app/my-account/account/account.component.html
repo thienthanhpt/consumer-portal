@@ -1,0 +1,299 @@
+<div id="wrapper">
+  <header class="header">
+    <div class="topbar">
+      <div class="topbar-left pl-sm-5 ml-sm-5">
+        <div class="text-md-center pt-2 ml-2">
+          <a routerLink="/">
+            <img class="logo" src="../../../assets/my-account/images/logo/large-logo.png" alt="Sunseap logo" height="50">
+          </a>
+        </div>
+      </div>
+
+      <nav class="navbar-custom">
+        <div class="container-fluid h-100">
+          <ul class="list-inline float-right mb-0 h-100 d-flex align-items-center">
+            <li class="list-inline-item">
+              <div class="btn-group">
+                <button type="button" class="btn shadow-none text-muted bg-transparent text-wrap dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span *ngIf="true">{{ account?.customer?.name }}</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <button class="dropdown-item" style="cursor: pointer" type="button" (click)="openChangePwdModal()">
+                    <i class="fas fa-key" style="margin-right: 5px"></i>
+                    &ensp;Change password
+                  </button>
+                  <button class="dropdown-item" style="cursor: pointer" type="button" (click)="modal.open(logoutConfirmModal, 'md')">
+                    <i class="far fa-arrow-alt-circle-right" style="margin-right: 5px"></i>
+                    &ensp;Logout
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li class="list-inline-item">
+              <a href="https://www.sunseap.com/residential/faqs/" target="_blank" class="text-dark">FAQ</a>
+            </li>
+            <li class="list-inline-item">
+              <button class="btn text-blue-dark bg-transparent shadow-none d-lg-none pt-2" *ngIf="!isSideBarCollapsed" (click)="toggleSideBar()">
+                <i class="fas fa-bars"></i>
+              </button>
+              <button class="btn text-blue-dark bg-transparent shadow-none d-lg-none pt-2" *ngIf="isSideBarCollapsed" (click)="toggleSideBar()">
+                <i class="fas fa-times"></i>
+              </button>
+            </li>
+            <!--<li class="list-inline-item app-search">-->
+              <!--<form role="search" class="">-->
+                <!--<input type="text" class="form-control">-->
+                <!--<a href="javascript:void(0)" class="text-muted"><i class="fa fa-search"></i></a>-->
+              <!--</form>-->
+            <!--</li>-->
+          </ul>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="side-menu left fixed-left" [class.show]="isSideBarCollapsed">
+      <div class="side-menu-inner">
+        <ul>
+          <!--<li>-->
+            <!--<a [routerLink]="[ROUTES.MY_CONSUMPTION]"-->
+               <!--[class.active]="activeRoute === ROUTES.MY_CONSUMPTION">-->
+              <!--<i class="fas fa-file-invoice"></i>&ensp;My Bills-->
+          <!--</a>-->
+            <!--<span class="arrow-left"></span>-->
+          <!--</li>-->
+
+          <li>
+            <a href="javascript:void(0)" class="text-muted">
+              <i class="fas fa-file-invoice"></i>&ensp;My Bills (Coming soon)
+          </a>
+            <span class="arrow-left"></span>
+          </li>
+
+          <li>
+            <a [routerLink]="['/' + ROUTES.MANAGE_MY_ACCOUNT]"
+               [class.active]="activeRoute === ROUTES.MANAGE_MY_ACCOUNT || activeRoute === ROUTES.PAY">
+              <i class="far fa-user-circle"></i>&ensp;My Account
+            </a>
+            <span class="arrow-left"></span>
+          </li>
+          <li>
+            <a href="javascript:void(0)" class="text-muted"><i class="far fa-comment"></i>&ensp;Support (Coming soon)</a>
+            <span class="arrow-left"></span>
+          </li>
+          <!--<li>-->
+            <!--<a [routerLink]="['/' + ROUTES.SUPPORT]"-->
+               <!--[class.active]="activeRoute === ROUTES.SUPPORT">-->
+              <!--<i class="far fa-comment"></i>&ensp; Support</a>-->
+            <!--<span class="arrow-left"></span>-->
+          <!--</li>-->
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="page-wrapper">
+      <div class="page-content">
+        <div class="container-fluid">
+          <div class="row mb-3 mt-3">
+            <div class="col-lg-6">
+              <h4 *ngIf="activeRoute !== ROUTES.LIST_ALL_BILLS && activeRoute !== ROUTES.PAY && activeRoute !== ROUTES.SUPPORT && activeRoute !== ROUTES.LIST_PAYMENT"
+                  class="page-title">Welcome <span *ngIf="true">{{ account?.customer?.name }}!</span></h4>
+              <a *ngIf="activeRoute === ROUTES.LIST_ALL_BILLS || activeRoute === ROUTES.LIST_PAYMENT" class="text-black" style="text-decoration: none; font-size: 1.5rem;" [routerLink]="[ROUTES.MY_CONSUMPTION]"
+                 [class.active]="activeRoute === ROUTES.MANAGE_MY_ACCOUNT">
+                <img src="/assets/my-account/images/icons/back_arrow.png" alt="Go back">
+                <span class="text-blue-dark">Dashboard</span>
+              </a>
+              <a *ngIf="activeRoute === ROUTES.PAY" class="text-black" style="text-decoration: none; font-size: 1.5rem;" [routerLink]="['/' + ROUTES.MANAGE_MY_ACCOUNT]"
+                 [class.active]="activeRoute === ROUTES.PAY">
+                <img src="/assets/my-account/images/icons/back_arrow.png" alt="Go back">
+                <span class="text-blue-dark">My Account</span>
+              </a>
+            </div>
+
+            <div class="col-lg-6" *ngIf="activeRoute !== ROUTES.PAY && activeRoute !== ROUTES.SUPPORT">
+              <div class="card">
+                <div class="d-flex justify-content-between align-items-center p-2">
+                  <h5 class="mb-0">Service Address</h5>
+                  <div class="btn-group">
+                    <button type="button" class="btn shadow-none text-muted bg-transparent text-wrap dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <span *ngIf="true">{{ selectedConsumer?.address }}</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <button class="text-muted dropdown-item" type="button" *ngFor="let consumer of account?.customer?.consumers" (click)="switchConsumer(consumer)">{{ consumer.address }}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <mat-card *ngIf="loaderService.status()" style="display: flex; justify-content: center; align-items: center; height: 700px;">
+            <mat-progress-spinner
+              color="primary"
+              mode="indeterminate">
+            </mat-progress-spinner>
+          </mat-card>
+          <div [hidden]="loaderService.status()">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="container-fluid text-center pt-sm-3 pb-sm-3 bg-white">
+        <ul class="menu-footer text-center text-md-left float-md-left">
+          <li class="menu-footer-item">
+            <a href="https://www.sunseap.com/privacy/" target="_blank" class="text-dark">Privacy Policy</a>
+          </li>
+          <li class="menu-footer-item">
+            <a href="https://www.sunseap.com/electricity-retail-terms-conditions/" target="_blank" class="text-dark">Commercial T&C</a>
+          </li>
+          <li class="menu-footer-item">
+            <a href="https://www.sunseap.com/terms-conditions/residential/" target="_blank" class="text-dark">Residential T&C</a>
+          </li>
+          <li class="menu-footer-item">
+            <a href="https://www.sunseap.com/anti-bribery-and-corruption-policy/" target="_blank" class="text-dark">Anti-bribery & Corruption Policy</a>
+          </li>
+        </ul>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<ng-template #logoutConfirmModal>
+  <div class="modal-header border-bottom-0 pb-0">
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+    <div class="mr-sm-4 ml-sm-4 text-center">
+      <h5 class="font-weight-bold">Logout</h5>
+      <p>You are about to leave this session.</p>
+      <button type="button" class="btn btn-red btn-login text-white" (click)="modal.hide(); logout()">Log me out</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #confirmModal>
+  <div class="modal-header border-bottom-0 pb-0">
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+    <div class="mr-sm-4 ml-sm-4 text-center">
+      <p>Your password has been changed successfully</p>
+      <button type="button" class="btn btn-red btn-login text-white" (click)="modal.hide();">OK</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #errorModal>
+  <div class="modal-header border-bottom-0 pb-0">
+    <h4 class="modal-title">&nbsp;</h4>
+    <button type="button" class="close" (click)="modal.hide();">&times;</button>
+  </div>
+
+  <div class="modal-body d-flex flex-column pt-0 pl-5 ml-5 pr-5 mr-5">
+    <div class="text-center">
+      <h5>Error</h5>
+    </div>
+    <div class="pt-5 pb-4 text-center">
+      <p [innerHTML]="errorMessage"></p>
+    </div>
+  </div>
+
+  <div class="my-4 mx-auto">
+    <button type="button" class="btn btn-submit" (click)="modal.hide();">
+      <span>OK</span>
+    </button>
+  </div>
+
+</ng-template>
+
+<ng-template #changePwdModal>
+  <div *ngIf="!isFirstTimeLoggedIn" class="modal-header border-bottom-0 pb-0">
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pr-sm-5 pl-sm-5 pb-5">
+    <div class="mr-sm-4 ml-sm-4">
+      <div class="text-center">
+        <h5 class="font-weight-bold">Change password</h5>
+        <p *ngIf="isFirstTimeLoggedIn">For security purpose, you are required to change your password for the first time.</p>
+      </div>
+      <form #form="ngForm" (ngSubmit)="onChangePsw(form)" novalidate>
+        <div *ngIf="!isFirstTimeLoggedIn" class="form-group col-12">
+          <label class="form-control-label" for="oldPassword">
+            <strong>Current Password*</strong>
+          </label>
+          <input name="oldPassword" id="oldPassword" class="form-control" type="password"
+                 [class.is-invalid]="oldPassword.invalid && (oldPassword.touched || form.submitted)"
+                 required [(ngModel)]="changePwdRequest.oldPassword"
+                 #oldPassword="ngModel"/>
+
+          <div *ngIf="oldPassword.invalid && (oldPassword.touched || form.submitted)" class="invalid-feedback">
+            <div *ngIf="oldPassword?.errors.required">
+              <i>Current password is required</i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group col-12">
+          <label class="form-control-label" for="newPassword">
+            <strong>New Password*</strong>
+          </label>
+          <input name="newPassword" id="newPassword" class="form-control" type="password"
+                 [class.is-invalid]="newPassword.invalid && (newPassword.touched || form.submitted)
+                 || (newPassword.touched && (newPassword?.value === oldPassword?.value))"
+                 required [(ngModel)]="changePwdRequest.newPassword" [pattern]="config.validationRegex.password"
+                 #newPassword="ngModel"/>
+
+          <div *ngIf="newPassword.invalid && (newPassword.touched || form.submitted)" class="invalid-feedback">
+            <i>Password length must greater than 11 including letters, digits and special characters</i>
+          </div>
+          <div *ngIf="newPassword.touched && (newPassword?.value === changePwdRequest?.oldPassword)" class="invalid-feedback">
+            <i>New Password must different from old password</i>
+          </div>
+        </div>
+
+        <div class="form-group col-12">
+          <label class="form-control-label" for="confirmNewPassword">
+            <strong>Confirmation New Password*</strong>
+          </label>
+          <input name="confirmNewPassword" id="confirmNewPassword" class="form-control" type="password"
+                 [class.is-invalid]="confirmNewPassword.invalid && (confirmNewPassword.touched || form.submitted)
+                 || (confirmNewPassword.touched && (confirmNewPassword?.value !== newPassword?.value))"
+                 required [(ngModel)]="changePwdRequest.confirmPassword"
+                 #confirmNewPassword="ngModel"/>
+
+          <div *ngIf="confirmNewPassword.invalid && (confirmNewPassword.touched || form.submitted)" class="invalid-feedback">
+            <div *ngIf="confirmNewPassword?.errors.required">
+              <i>New Password is required</i>
+            </div>
+          </div>
+          <div *ngIf="confirmNewPassword.touched && (confirmNewPassword?.value !== newPassword?.value) && confirmNewPassword?.value" class="invalid-feedback">
+            <i>Confirm New Password is not correct</i>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="row justify-content-center">
+            <button id="cancel-btn" type="button" class="btn btn-secondary btn-resend-otp" style="width: 62px; margin-right: 2px" (click)="onCalcelledChangePsw()">
+              <span>Cancel</span>
+            </button>
+            <button type="submit" class="btn btn-danger">Confirm</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-template>
